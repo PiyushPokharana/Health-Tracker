@@ -28,8 +28,8 @@ class DatabaseHelper {
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE DailyRecords (
-        date TEXT PRIMARY KEY,  // Store date as TEXT (ISO8601)
-        isSuccess INTEGER       // 1 for true, 0 for false
+        date TEXT PRIMARY KEY,
+        isSuccess INTEGER
       )
     ''');
   }

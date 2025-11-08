@@ -65,7 +65,8 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
+                  Text(
+                      "Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
                   ElevatedButton(
                     onPressed: () async {
                       final DateTime? picked = await showDatePicker(
@@ -99,7 +100,7 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
                   child: const Text('Cancel'),
                 ),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (selectedDate.isAfter(DateTime.now())) {
                       //  Prevent adding future entries
                       Navigator.pop(context);
@@ -111,9 +112,11 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
                       return;
                     }
                     if (record == null) {
-                      widget.recordManager.addRecord(selectedDate, newIsSuccess);
+                      await widget.recordManager
+                          .addRecord(selectedDate, newIsSuccess);
                     } else {
-                      widget.recordManager.editRecord(selectedDate, newIsSuccess);
+                      await widget.recordManager
+                          .editRecord(selectedDate, newIsSuccess);
                     }
                     Navigator.pop(context);
                     setState(() {}); //  Refresh UI after add/edit
@@ -269,7 +272,8 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
                     .length,
                 itemBuilder: (context, index) {
                   final record = widget.recordManager.records
-                      .where((record) => tc.isSameDay(record.date, _selectedDay))
+                      .where(
+                          (record) => tc.isSameDay(record.date, _selectedDay))
                       .toList()[index];
                   return ListTile(
                     title: Text(
@@ -303,8 +307,8 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
         children: [
           FloatingActionButton(
             heroTag: 'success',
-            onPressed: () =>
-                _addOrEditRecord(context, date: DateTime.now(), isSuccess: true),
+            onPressed: () => _addOrEditRecord(context,
+                date: DateTime.now(), isSuccess: true),
             backgroundColor: Colors.green,
             tooltip: 'Mark Today as Successful',
             child: const Icon(Icons.check),
@@ -312,8 +316,8 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
           const SizedBox(height: 16),
           FloatingActionButton(
             heroTag: 'not_success',
-            onPressed: () =>
-                _addOrEditRecord(context, date: DateTime.now(), isSuccess: false),
+            onPressed: () => _addOrEditRecord(context,
+                date: DateTime.now(), isSuccess: false),
             backgroundColor: Colors.red,
             tooltip: 'Mark Today as Not Successful',
             child: const Icon(Icons.close),
@@ -334,7 +338,7 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
   }
 
   Future<void> deleteRecord(DateTime date) async {
-    widget.recordManager.deleteRecord(date);
+    await widget.recordManager.deleteRecord(date);
     setState(() {});
   }
 
@@ -352,7 +356,8 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
+                  Text(
+                      "Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
                   ElevatedButton(
                     onPressed: () async {
                       final DateTime? picked = await showDatePicker(
@@ -386,7 +391,7 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
                   child: const Text('Cancel'),
                 ),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (selectedDate.isAfter(DateTime.now())) {
                       //  Prevent adding future entries
                       Navigator.pop(context);
@@ -397,7 +402,8 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
                       );
                       return;
                     }
-                    widget.recordManager.addRecord(selectedDate, newIsSuccess);
+                    await widget.recordManager
+                        .addRecord(selectedDate, newIsSuccess);
                     Navigator.pop(context);
                     setState(() {}); //  Refresh UI after adding
                   },
