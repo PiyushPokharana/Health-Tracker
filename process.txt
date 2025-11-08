@@ -1,0 +1,366 @@
+================================================================================
+                    MULTI-HABIT TRACKER DEVELOPMENT PROCESS
+                              MVP Approach (Option A)
+================================================================================
+
+This file outlines the step-by-step process for transforming the current 
+single-habit tracker into a multi-habit tracker following the MVP approach.
+
+================================================================================
+                              SPRINT 1: CORE MVP
+                             (~20-30 hours total)
+================================================================================
+
+PHASE 1: DATABASE & MODELS (Foundation)
+----------------------------------------
+⚠️  CRITICAL: This is the foundation - MUST be done first and correctly!
+
+Tasks:
+□ 1.1 Create new database schema
+      - Habits table (id, name, createdAt, isDeleted, deletedAt)
+      - HabitRecords table (id, habitId, date, status, note)
+
+□ 1.2 Create lib/models/habit.dart
+      - Properties: id, name, createdAt, isDeleted, deletedAt
+      - Methods: toMap(), fromMap(), copyWith()
+
+□ 1.3 Create lib/models/habit_record.dart
+      - Create HabitStatus enum (complete, missed)
+      - Properties: id, habitId, date, status, note
+      - Methods: toMap(), fromMap(), copyWith()
+
+□ 1.4 Update lib/models/database_helper.dart
+      - Add new table creation in _onCreate
+      - Add database version upgrade (_onUpgrade)
+      - Implement habit CRUD operations
+      - Implement habit record CRUD operations
+
+□ 1.5 Create lib/models/habit_manager.dart
+      - Load all habits
+      - Add/edit/delete habit
+      - Load records for specific habit
+      - Calculate streaks per habit
+      - Calculate basic statistics
+
+✓ Phase 1 Complete? → Test database operations manually before proceeding!
+
+--------------------------------------------------------------------------------
+
+PHASE 2: HOME SCREEN (Habit List)
+----------------------------------
+Goal: Get basic habit list working - just add/view habits
+
+Tasks:
+□ 2.1 Create lib/screens/home_screen.dart
+      - App bar with title
+      - ListView to display habits
+      - Empty state message ("No habits yet")
+      - FloatingActionButton (+) to add habits
+
+□ 2.2 Create lib/widgets/habit_list_tile.dart
+      - Display habit name
+      - Display current streak (🔥 X days)
+      - Handle tap (navigate to habit detail screen)
+      - Simple card design
+
+□ 2.3 Create add habit dialog or screen
+      - Text field for habit name
+      - Save button
+      - Cancel button
+      - Basic validation (non-empty)
+
+□ 2.4 Update lib/main.dart
+      - Change home to HomeScreen
+      - Pass HabitManager to HomeScreen
+      - Set up basic navigation
+
+□ 2.5 Wire up navigation
+      - Tap habit → Navigate to detail screen
+      - Add button → Show add habit dialog
+      - Refresh list after adding habit
+
+✓ Phase 2 Complete? → You should see a list of habits you can add/view!
+
+--------------------------------------------------------------------------------
+
+PHASE 3: BASIC HBTC (Habit Detail Screen)
+------------------------------------------
+Goal: Simple calendar showing complete/missed days
+
+Tasks:
+□ 3.1 Create lib/screens/habit_detail_screen.dart
+      - App bar with habit name
+      - Streak counter at top (🔥 current streak)
+      - TableCalendar widget
+      - Back button navigation
+
+□ 3.2 Implement calendar visualization
+      - Load records for selected habit
+      - Show complete days in green (✅)
+      - Show missed days in red/gray (❌)
+      - Show empty days as default
+
+□ 3.3 Create day tap handler
+      - When user taps a day, show simple dialog
+      - Two buttons: "Mark Complete" and "Mark Missed"
+      - Save to database
+      - Refresh calendar
+
+□ 3.4 Display basic statistics
+      - Current streak
+      - Max streak
+      - Total days tracked
+      - Simple text display below calendar
+
+□ 3.5 Connect everything
+      - Pass habit ID from home screen
+      - Load habit data on screen open
+      - Update streaks after marking days
+
+✓ Phase 3 Complete? → You should have a working multi-habit tracker!
+
+================================================================================
+                         🧪 CHECKPOINT: TEST EVERYTHING
+================================================================================
+
+Before proceeding to Sprint 2, verify:
+
+□ Database persists data correctly
+  - Close and reopen app
+  - Verify habits are still there
+  - Verify records are still there
+
+□ Navigation works smoothly
+  - Home → Detail → Back
+  - No crashes or errors
+
+□ Streak calculation is correct
+  - Mark consecutive days complete
+  - Verify streak increments
+  - Break streak and verify it resets
+
+□ Multiple habits work independently
+  - Create 2-3 test habits
+  - Mark different days on each
+  - Verify data doesn't mix
+
+□ Edge cases handled
+  - Empty habit list
+  - Habit with no records
+  - Today's date handling
+
+⚠️  DO NOT PROCEED until all tests pass!
+
+================================================================================
+                        SPRINT 2: ENHANCED FEATURES
+                            (~15-20 hours total)
+================================================================================
+
+PHASE 4: THREE-STATUS SYSTEM
+-----------------------------
+Goal: Add the skipped status (complete, missed, skipped)
+
+Tasks:
+□ 4.1 Update HabitStatus enum
+      - Add 'skipped' to enum in habit_record.dart
+
+□ 4.2 Update day tap dialog
+      - Add third button: "Mark Skipped" (➖)
+      - Use yellow/gray color for skipped
+
+□ 4.3 Update calendar visualization
+      - Show skipped days with distinct color
+      - Update calendar builders
+
+□ 4.4 Update streak calculation logic
+      - Complete: Continue streak
+      - Missed: Break streak
+      - Skipped: Ignore (don't break or continue)
+
+□ 4.5 Update statistics
+      - Exclude skipped from percentage
+      - Show skipped count separately
+
+✓ Phase 4 Complete? → Three statuses working correctly!
+
+--------------------------------------------------------------------------------
+
+PHASE 5: NOTES SYSTEM
+---------------------
+Goal: Add note functionality to any day
+
+Tasks:
+□ 5.1 Verify 'note' field in database
+      - Already in HabitRecords table from Phase 1
+
+□ 5.2 Create lib/widgets/day_detail_bottom_sheet.dart
+      - Replace simple dialog with bottom sheet
+      - Three status buttons (Complete/Missed/Skipped)
+      - Text field for notes
+      - Save button
+
+□ 5.3 Update day tap handler
+      - Show bottom sheet instead of dialog
+      - Load existing note if available
+      - Save note along with status
+
+□ 5.4 Add note indicator to calendar
+      - Show 📝 icon on days with notes
+      - Or add small dot indicator
+
+□ 5.5 Display notes
+      - Show note in bottom sheet when reopening
+      - Allow editing/deleting notes
+
+✓ Phase 5 Complete? → Can add notes to any day!
+
+--------------------------------------------------------------------------------
+
+PHASE 6: TRASH & RESTORE SYSTEM
+--------------------------------
+Goal: Add delete/restore functionality
+
+Tasks:
+□ 6.1 Implement soft delete
+      - Update delete in HabitManager
+      - Set isDeleted = 1, deletedAt = current timestamp
+      - Filter deleted habits from home screen
+
+□ 6.2 Add delete option to home screen
+      - Long-press habit to show menu
+      - "Delete" option moves to trash
+      - Show confirmation dialog
+
+□ 6.3 Create lib/screens/trash_screen.dart
+      - List all deleted habits
+      - Show deletion date
+      - Restore button
+      - Permanent delete button
+
+□ 6.4 Create lib/screens/settings_screen.dart
+      - Add to app bar on home screen
+      - Link to trash screen
+      - Other settings (optional)
+
+□ 6.5 Implement restore functionality
+      - Restore button sets isDeleted = 0
+      - Clear deletedAt timestamp
+      - Return habit to home screen
+
+□ 6.6 Add 30-day auto-delete
+      - Check on app launch
+      - Delete habits where deletedAt > 30 days
+      - Run cleanup in HabitManager.loadHabits()
+
+✓ Phase 6 Complete? → Full trash system working!
+
+================================================================================
+                      🧪 CHECKPOINT: TEST AGAIN + POLISH
+================================================================================
+
+Test all new features:
+
+□ Three-status system works correctly
+  - All three statuses save properly
+  - Streak logic handles skipped correctly
+  - Calendar shows correct colors
+
+□ Notes system works
+  - Can add notes to any day
+  - Notes persist after app restart
+  - Can edit/delete notes
+  - Note indicator shows on calendar
+
+□ Trash system works
+  - Delete moves to trash
+  - Restore brings back habit
+  - 30-day auto-delete works
+  - No data loss
+
+□ All features work together
+  - Create habit → Mark days → Add notes → Delete → Restore
+  - Test with multiple habits
+
+================================================================================
+                         SPRINT 3: POLISH & DEPLOY
+                            (~10-15 hours total)
+================================================================================
+
+PHASE 7: DATA MIGRATION (if needed)
+------------------------------------
+□ Migrate existing DailyRecords to new structure
+□ Create default "Daily Success" habit with old data
+□ Test migration thoroughly
+
+PHASE 8: UI/UX POLISH
+----------------------
+□ Choose color scheme
+□ Add animations and transitions
+□ Improve empty states
+□ Add loading indicators
+□ Add error handling
+□ Confirmation dialogs for destructive actions
+
+PHASE 9: TESTING
+----------------
+□ Test on different screen sizes
+□ Test edge cases
+□ Performance testing with many habits
+□ Fix any remaining bugs
+
+PHASE 10: DOCUMENTATION
+-----------------------
+□ Update README.md
+□ Add code comments
+□ Create user guide (optional)
+
+================================================================================
+                              COMPLETION CHECKLIST
+================================================================================
+
+MVP Complete:
+□ Can create multiple habits
+□ Can track each habit independently
+□ Calendar shows completion status
+□ Streaks calculate correctly
+□ Data persists across app restarts
+
+Enhanced Features Complete:
+□ Three-status system (complete/missed/skipped)
+□ Notes on any day
+□ Trash and restore system
+□ 30-day auto-delete
+
+Polish Complete:
+□ UI looks good
+□ No crashes or bugs
+□ Smooth user experience
+□ Ready for production
+
+================================================================================
+                                  NOTES
+================================================================================
+
+Development Tips:
+- Commit to git after completing each phase
+- Test thoroughly before moving to next phase
+- Don't skip testing checkpoints!
+- Keep the app runnable at all times
+- Ask for help if stuck on any phase
+
+Current Status: ⬜ Not Started
+
+Started: _______________
+Phase 1 Complete: _______________
+Phase 2 Complete: _______________
+Phase 3 Complete: _______________
+MVP Testing: _______________
+Phase 4 Complete: _______________
+Phase 5 Complete: _______________
+Phase 6 Complete: _______________
+Final Testing: _______________
+Completed: _______________
+
+================================================================================
+                                END OF PROCESS
+================================================================================
