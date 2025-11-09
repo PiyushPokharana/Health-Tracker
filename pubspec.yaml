@@ -50,6 +50,10 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.13.1  # For generating app icons
+  mockito: ^5.4.4  # For mocking in tests
+  build_runner: ^2.4.6  # For code generation
+  path_provider_platform_interface: ^2.1.2
+  sqflite_common_ffi: ^2.3.4+4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -94,10 +98,10 @@ flutter:
 
 # Configuration for flutter_launcher_icons
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
   ios: true
   image_path: "assets/icon.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   # Temporarily disabled adaptive icon - using main icon for all
-  # adaptive_icon_background: "#FF6B35" # Orange color to match app theme
-  # adaptive_icon_foreground: "assets/icon_foreground.png"
+  adaptive_icon_background: "#FF6B35" # Orange color to match app theme
+  adaptive_icon_foreground: "assets/icon_foreground.png"
