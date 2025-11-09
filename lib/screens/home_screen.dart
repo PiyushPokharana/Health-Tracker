@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // For HapticFeedback
 import 'package:provider/provider.dart';
 import '../models/habit.dart';
 import '../providers/habit_provider.dart';
@@ -61,11 +62,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (result == true && nameController.text.trim().isNotEmpty) {
+      HapticFeedback.lightImpact(); // Light haptic for adding habit
       // Use Provider instead of HabitManager directly
       final provider = context.read<HabitProvider>();
       final success = await provider.addHabit(nameController.text.trim());
 
       if (mounted) {
+        if (success) {
+          HapticFeedback.mediumImpact(); // Success haptic
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -81,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _toggleSelection(int habitId) {
+    HapticFeedback.selectionClick(); // Light haptic for selection
     setState(() {
       if (_selectedHabitIds.contains(habitId)) {
         _selectedHabitIds.remove(habitId);
@@ -138,6 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (confirmed == true) {
+      HapticFeedback.mediumImpact(); // Haptic for delete confirmation
       // Use Provider instead of HabitManager
       final provider = context.read<HabitProvider>();
       final success = await provider.deleteHabits(_selectedHabitIds.toList());
@@ -237,9 +244,13 @@ class _HomeScreenState extends State<HomeScreen> {
               : _buildHabitList(habits),
       floatingActionButton: _isSelectionMode
           ? null
-          : FloatingActionButton(
-              onPressed: _showAddHabitDialog,
-              child: const Icon(Icons.add),
+          : Semantics(
+              label: 'Add new habit',
+              button: true,
+              child: FloatingActionButton(
+                onPressed: _showAddHabitDialog,
+                child: const Icon(Icons.add),
+              ),
             ),
     );
   }
@@ -248,34 +259,42 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppBar(
       title: const Text('My Habits'),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.notes),
-          onPressed: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const NotesListScreen(),
-              ),
-            );
-            // Provider automatically refreshes - no manual reload needed!
-          },
-          tooltip: 'View All Notes',
+        Semantics(
+          label: 'View all notes',
+          button: true,
+          child: IconButton(
+            icon: const Icon(Icons.notes),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotesListScreen(),
+                ),
+              );
+              // Provider automatically refreshes - no manual reload needed!
+            },
+            tooltip: 'View All Notes',
+          ),
         ),
-        IconButton(
-          icon: const Icon(Icons.settings),
-          onPressed: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SettingsScreen(),
-              ),
-            );
-            // Reload habits in case any were restored from trash
-            if (mounted) {
-              context.read<HabitProvider>().loadHabits();
-            }
-          },
-          tooltip: 'Settings',
+        Semantics(
+          label: 'Open settings',
+          button: true,
+          child: IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+              // Reload habits in case any were restored from trash
+              if (mounted) {
+                context.read<HabitProvider>().loadHabits();
+              }
+            },
+            tooltip: 'Settings',
+          ),
         ),
       ],
     );
@@ -345,53 +364,88 @@ class _HomeScreenState extends State<HomeScreen> {
         final habit = habits[index];
         final isSelected = _selectedHabitIds.contains(habit.id);
 
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: ListTile(
-            leading: _isSelectionMode
-                ? Checkbox(
-                    value: isSelected,
-                    onChanged: (_) => _toggleSelection(habit.id!),
-                  )
-                : const Icon(Icons.track_changes),
-            title: Text(habit.name),
-            subtitle: FutureBuilder<int>(
-              // Use Provider for streak calculation
-              future: context.read<HabitProvider>().getCurrentStreak(habit.id!),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  final streak = snapshot.data!;
-                  return Text(
-                    streak > 0
-                        ? '🔥 $streak day${streak > 1 ? 's' : ''} streak'
-                        : 'No streak yet',
-                    style: TextStyle(
-                      color: streak > 0 ? Colors.orange : Colors.grey,
-                    ),
-                  );
-                }
-                return const Text('Loading...');
-              },
-            ),
-            onTap: () async {
-              if (_isSelectionMode) {
-                _toggleSelection(habit.id!);
-              } else {
-                // Navigate to habit detail screen
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HabitDetailScreen(habit: habit),
+        return Semantics(
+          label: 'Habit: ${habit.name}',
+          button: true,
+          child: Hero(
+            tag: 'habit_${habit.id}',
+            child: Material(
+              type: MaterialType.transparency,
+              child: Card(
+                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: ListTile(
+                  leading: _isSelectionMode
+                      ? Semantics(
+                          label: isSelected
+                              ? 'Selected, tap to deselect'
+                              : 'Not selected, tap to select',
+                          child: Checkbox(
+                            value: isSelected,
+                            onChanged: (_) => _toggleSelection(habit.id!),
+                          ),
+                        )
+                      : const Icon(Icons.track_changes),
+                  title: Text(habit.name),
+                  subtitle: FutureBuilder<int>(
+                    // Use Provider for streak calculation
+                    future: context
+                        .read<HabitProvider>()
+                        .getCurrentStreak(habit.id!),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        final streak = snapshot.data!;
+                        return Text(
+                          streak > 0
+                              ? '🔥 $streak day${streak > 1 ? 's' : ''} streak'
+                              : 'No streak yet',
+                          style: TextStyle(
+                            color: streak > 0 ? Colors.orange : Colors.grey,
+                          ),
+                        );
+                      }
+                      return const Text('Loading...');
+                    },
                   ),
-                );
-                // Provider will automatically refresh if needed
-              }
-            },
-            onLongPress: () {
-              if (!_isSelectionMode) {
-                _enterSelectionMode(habit.id!);
-              }
-            },
+                  onTap: () async {
+                    if (_isSelectionMode) {
+                      _toggleSelection(habit.id!);
+                    } else {
+                      // Navigate to habit detail screen with page transition
+                      await Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  HabitDetailScreen(habit: habit),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(1.0, 0.0);
+                            const end = Offset.zero;
+                            const curve = Curves.easeInOut;
+                            var tween = Tween(begin: begin, end: end)
+                                .chain(CurveTween(curve: curve));
+                            var offsetAnimation = animation.drive(tween);
+                            return SlideTransition(
+                              position: offsetAnimation,
+                              child: child,
+                            );
+                          },
+                          transitionDuration: const Duration(milliseconds: 300),
+                        ),
+                      );
+                      // Provider will automatically refresh if needed
+                    }
+                  },
+                  onLongPress: () {
+                    if (!_isSelectionMode) {
+                      HapticFeedback
+                          .mediumImpact(); // Haptic for entering selection mode
+                      _enterSelectionMode(habit.id!);
+                    }
+                  },
+                ),
+              ),
+            ),
           ),
         );
       },

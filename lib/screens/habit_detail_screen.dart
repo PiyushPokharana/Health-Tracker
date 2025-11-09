@@ -112,36 +112,53 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.habit.name),
+        title: Hero(
+          tag: 'habit_${widget.habit.id}',
+          child: Material(
+            color: Colors.transparent,
+            child: Text(
+              widget.habit.name,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notes),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NotesListScreen(
+          Semantics(
+            label: 'View all notes for this habit',
+            button: true,
+            child: IconButton(
+              icon: const Icon(Icons.notes),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotesListScreen(
+                      habitId: widget.habit.id!,
+                    ),
+                  ),
+                );
+                // Refresh after returning from notes screen
+                await _loadRecords();
+              },
+              tooltip: 'View All Notes',
+            ),
+          ),
+          Semantics(
+            label: 'View statistics and charts',
+            button: true,
+            child: IconButton(
+              icon: const Icon(Icons.show_chart),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) => StatisticsWidget(
                     habitId: widget.habit.id!,
                   ),
-                ),
-              );
-              // Refresh after returning from notes screen
-              await _loadRecords();
-            },
-            tooltip: 'View All Notes',
-          ),
-          IconButton(
-            icon: const Icon(Icons.show_chart),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (context) => StatisticsWidget(
-                  habitId: widget.habit.id!,
-                ),
-              );
-            },
-            tooltip: 'View Statistics',
+                );
+              },
+              tooltip: 'View Statistics',
+            ),
           ),
         ],
       ),
@@ -433,10 +450,14 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showDayDetailSheet(DateTime.now()),
-        icon: const Icon(Icons.add),
-        label: const Text('Mark Today'),
+      floatingActionButton: Semantics(
+        label: 'Mark today\'s status',
+        button: true,
+        child: FloatingActionButton.extended(
+          onPressed: () => _showDayDetailSheet(DateTime.now()),
+          icon: const Icon(Icons.add),
+          label: const Text('Mark Today'),
+        ),
       ),
     );
   }

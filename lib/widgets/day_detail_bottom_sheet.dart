@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // For HapticFeedback
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../models/habit_record.dart';
@@ -42,6 +43,7 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
 
   Future<void> _saveRecord() async {
     if (_selectedStatus == null) {
+      HapticFeedback.lightImpact(); // Light vibration for error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a status')),
       );
@@ -63,6 +65,9 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
       );
 
       if (mounted) {
+        if (success) {
+          HapticFeedback.mediumImpact(); // Success vibration
+        }
         Navigator.pop(context, true); // Return true to indicate success
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -110,6 +115,7 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
     );
 
     if (confirmed == true) {
+      HapticFeedback.mediumImpact(); // Confirm delete action
       setState(() => _isSaving = true);
       try {
         // Use Provider instead of HabitManager
@@ -239,16 +245,21 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: _noteController,
-                maxLines: 3,
-                maxLength: 200,
-                decoration: const InputDecoration(
-                  hintText: 'Add a note about this day...',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.note),
+              Semantics(
+                label: 'Note text field',
+                hint: 'Add a note about this day',
+                textField: true,
+                child: TextField(
+                  controller: _noteController,
+                  maxLines: 3,
+                  maxLength: 200,
+                  decoration: const InputDecoration(
+                    hintText: 'Add a note about this day...',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.note),
+                  ),
+                  textCapitalization: TextCapitalization.sentences,
                 ),
-                textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 24),
 
@@ -256,29 +267,37 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      onPressed: _isSaving
-                          ? null
-                          : () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
+                    child: Semantics(
+                      label: 'Cancel without saving',
+                      button: true,
+                      child: OutlinedButton(
+                        onPressed: _isSaving
+                            ? null
+                            : () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     flex: 2,
-                    child: ElevatedButton(
-                      onPressed: _isSaving ? null : _saveRecord,
-                      child: _isSaving
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Text('Save'),
+                    child: Semantics(
+                      label: 'Save habit status and note',
+                      button: true,
+                      child: ElevatedButton(
+                        onPressed: _isSaving ? null : _saveRecord,
+                        child: _isSaving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : const Text('Save'),
+                      ),
                     ),
                   ),
                 ],
@@ -299,39 +318,45 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
   }) {
     final isSelected = _selectedStatus == status;
 
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedStatus = status;
-        });
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
-          border: Border.all(
-            color: isSelected ? color : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
+    return Semantics(
+      label: 'Mark as $label',
+      selected: isSelected,
+      button: true,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick(); // Light click feedback
+          setState(() {
+            _selectedStatus = status;
+          });
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
+            border: Border.all(
+              color: isSelected ? color : Colors.grey.shade300,
+              width: isSelected ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(12),
           ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Text(
-              icon,
-              style: const TextStyle(fontSize: 28),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? color : Colors.grey.shade700,
+          child: Column(
+            children: [
+              Text(
+                icon,
+                style: const TextStyle(fontSize: 28),
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? color : Colors.grey.shade700,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

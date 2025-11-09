@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Icon SVG to PNG Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #FF6B35;
+        }
+
+        .preview {
+            display: flex;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .icon-box {
+            text-align: center;
+        }
+
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: checkered;
+        }
+
+        button {
+            background: #FF6B35;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            background: #E55A2B;
+        }
+
+        .instructions {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border-left: 4px solid #FF6B35;
+        }
+
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎨 Daily Success Tracker - Icon Generator</h1>
+        <p>Convert SVG icons to PNG format (1024x1024px)</p>
+
+        <div class="preview">
+            <div class="icon-box">
+                <h3>Main Icon (with background)</h3>
+                <canvas id="canvas1" width="512" height="512"></canvas>
+                <br>
+                <button onclick="downloadIcon('canvas1', 'icon.png')">⬇️ Download PNG</button>
+            </div>
+
+            <div class="icon-box">
+                <h3>Foreground Icon (transparent)</h3>
+                <canvas id="canvas2" width="512" height="512"></canvas>
+                <br>
+                <button onclick="downloadIcon('canvas2', 'icon_foreground.png')">⬇️ Download PNG</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📝 Instructions:</h3>
+            <ol>
+                <li>Click the download buttons above to save both PNG files</li>
+                <li>Save them to: <code>assets/icon.png</code> and <code>assets/icon_foreground.png</code></li>
+                <li>Run: <code>flutter pub run flutter_launcher_icons</code></li>
+                <li>Run: <code>flutter run</code></li>
+                <li>Check your app icon in the app drawer! 🎉</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Function to load and render SVG to canvas
+        async function loadSVG(svgPath, canvasId) {
+            const response = await fetch(svgPath);
+            const svgText = await response.text();
+
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+
+            // Create image from SVG
+            const img = new Image();
+            const blob = new Blob([svgText], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+
+            img.onload = function () {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                URL.revokeObjectURL(url);
+            };
+
+            img.src = url;
+        }
+
+        // Function to download canvas as PNG
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+
+            // Create a temporary canvas at full resolution
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 1024;
+            tempCanvas.height = 1024;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // Draw the current canvas content scaled up
+            tempCtx.drawImage(canvas, 0, 0, 1024, 1024);
+
+            // Download
+            tempCanvas.toBlob(function (blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                alert('✅ Downloaded: ' + filename + '\n\nSave it to the assets folder!');
+            }, 'image/png');
+        }
+
+        // Load SVGs when page loads
+        window.onload = function () {
+            loadSVG('assets/icon.svg', 'canvas1');
+            loadSVG('assets/icon_foreground.svg', 'canvas2');
+        };
+    </script>
+</body>
+
+</html>
