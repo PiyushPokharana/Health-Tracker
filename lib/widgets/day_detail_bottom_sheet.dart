@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../models/habit_record.dart';
-import '../models/habit_manager.dart';
+import '../providers/habit_provider.dart';
 
 class DayDetailBottomSheet extends StatefulWidget {
   final DateTime date;
   final HabitRecord? existingRecord;
-  final HabitManager habitManager;
   final int habitId;
 
   const DayDetailBottomSheet({
     super.key,
     required this.date,
     this.existingRecord,
-    required this.habitManager,
     required this.habitId,
   });
 
@@ -52,7 +51,9 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
     setState(() => _isSaving = true);
 
     try {
-      await widget.habitManager.addOrUpdateRecord(
+      // Use Provider instead of HabitManager
+      final provider = context.read<HabitProvider>();
+      final success = await provider.addOrUpdateRecord(
         widget.habitId,
         widget.date,
         _selectedStatus!,
@@ -64,7 +65,13 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
       if (mounted) {
         Navigator.pop(context, true); // Return true to indicate success
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Record saved!')),
+          SnackBar(
+            content: Text(
+              success
+                  ? 'Record saved!'
+                  : provider.errorMessage ?? 'Error saving record',
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -105,11 +112,20 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
     if (confirmed == true) {
       setState(() => _isSaving = true);
       try {
-        await widget.habitManager.deleteRecord(widget.existingRecord!.id!);
+        // Use Provider instead of HabitManager
+        final provider = context.read<HabitProvider>();
+        final success = await provider.deleteRecord(widget.existingRecord!.id!);
+
         if (mounted) {
           Navigator.pop(context, true); // Return true to refresh
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Record deleted')),
+            SnackBar(
+              content: Text(
+                success
+                    ? 'Record deleted'
+                    : provider.errorMessage ?? 'Error deleting record',
+              ),
+            ),
           );
         }
       } catch (e) {

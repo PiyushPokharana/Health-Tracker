@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/habit_manager.dart';
+import 'package:provider/provider.dart';
 import '../models/habit.dart';
+import '../providers/habit_provider.dart';
 import 'habit_detail_screen.dart';
 import 'notes_list_screen.dart';
 import 'settings_screen.dart';
@@ -13,34 +14,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final HabitManager _habitManager = HabitManager();
-  List<Habit> _habits = [];
-  bool _isLoading = true;
+  // Only keep local UI state (selection mode)
   bool _isSelectionMode = false;
   final Set<int> _selectedHabitIds = {};
 
   @override
   void initState() {
     super.initState();
-    _loadHabits();
-  }
-
-  Future<void> _loadHabits() async {
-    setState(() => _isLoading = true);
-    try {
-      final habits = await _habitManager.loadHabits();
-      setState(() {
-        _habits = habits;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading habits: $e')),
-        );
-      }
-    }
+    // Load habits using Provider - no setState needed!
+    Future.microtask(
+      () => context.read<HabitProvider>().loadHabits(),
+    );
   }
 
   Future<void> _showAddHabitDialog() async {
@@ -77,21 +61,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (result == true && nameController.text.trim().isNotEmpty) {
-      try {
-        await _habitManager.addHabit(nameController.text.trim());
-        await _loadHabits();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Habit added successfully!')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error adding habit: $e')),
-          );
-        }
+      // Use Provider instead of HabitManager directly
+      final provider = context.read<HabitProvider>();
+      final success = await provider.addHabit(nameController.text.trim());
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? 'Habit added successfully!'
+                  : provider.errorMessage ?? 'Error adding habit',
+            ),
+          ),
+        );
       }
+      // No need to call _loadHabits() - Provider handles it automatically!
     }
   }
 
@@ -126,7 +111,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void _selectAll() {
     setState(() {
       _selectedHabitIds.clear();
-      _selectedHabitIds.addAll(_habits.map((h) => h.id!));
+      // Get habits from Provider instead of local state
+      final habits = context.read<HabitProvider>().habits;
+      _selectedHabitIds.addAll(habits.map((h) => h.id!));
     });
   }
 
@@ -151,26 +138,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (confirmed == true) {
-      try {
-        for (final habitId in _selectedHabitIds) {
-          await _habitManager.deleteHabit(habitId);
-        }
-        _exitSelectionMode();
-        await _loadHabits();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text('$count habit${count > 1 ? 's' : ''} moved to trash')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting habits: $e')),
-          );
-        }
+      // Use Provider instead of HabitManager
+      final provider = context.read<HabitProvider>();
+      final success = await provider.deleteHabits(_selectedHabitIds.toList());
+
+      _exitSelectionMode();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? '$count habit${count > 1 ? 's' : ''} moved to trash'
+                  : provider.errorMessage ?? 'Error deleting habits',
+            ),
+          ),
+        );
       }
+      // No need to call _loadHabits() - Provider handles it automatically!
     }
   }
 
@@ -178,7 +163,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_selectedHabitIds.length != 1) return;
 
     final habitId = _selectedHabitIds.first;
-    final habit = _habits.firstWhere((h) => h.id == habitId);
+    // Get habit from Provider instead of local state
+    final habit = context.read<HabitProvider>().getHabitById(habitId);
+    if (habit == null) return;
+
     final nameController = TextEditingController(text: habit.name);
 
     final result = await showDialog<bool>(
@@ -211,35 +199,42 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (result == true && nameController.text.trim().isNotEmpty) {
-      try {
-        final updatedHabit = habit.copyWith(name: nameController.text.trim());
-        await _habitManager.updateHabit(updatedHabit);
-        _exitSelectionMode();
-        await _loadHabits();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Habit renamed successfully!')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error renaming habit: $e')),
-          );
-        }
+      // Use Provider instead of HabitManager
+      final provider = context.read<HabitProvider>();
+      final updatedHabit = habit.copyWith(name: nameController.text.trim());
+      final success = await provider.updateHabit(updatedHabit);
+
+      _exitSelectionMode();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? 'Habit renamed successfully!'
+                  : provider.errorMessage ?? 'Error renaming habit',
+            ),
+          ),
+        );
       }
+      // No need to call _loadHabits() - Provider handles it automatically!
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Watch the provider to rebuild when habits change
+    final provider = context.watch<HabitProvider>();
+    final habits = provider.habits;
+    final isLoading = provider.isLoading;
+
     return Scaffold(
       appBar: _isSelectionMode ? _buildSelectionAppBar() : _buildNormalAppBar(),
-      body: _isLoading
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _habits.isEmpty
+          : habits.isEmpty
               ? _buildEmptyState()
-              : _buildHabitList(),
+              : _buildHabitList(habits),
       floatingActionButton: _isSelectionMode
           ? null
           : FloatingActionButton(
@@ -262,8 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 builder: (context) => const NotesListScreen(),
               ),
             );
-            // Refresh after returning from notes screen
-            await _loadHabits();
+            // Provider automatically refreshes - no manual reload needed!
           },
           tooltip: 'View All Notes',
         ),
@@ -276,8 +270,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 builder: (context) => const SettingsScreen(),
               ),
             );
-            // Refresh after returning from settings
-            await _loadHabits();
+            // Reload habits in case any were restored from trash
+            if (mounted) {
+              context.read<HabitProvider>().loadHabits();
+            }
           },
           tooltip: 'Settings',
         ),
@@ -342,11 +338,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHabitList() {
+  Widget _buildHabitList(List<Habit> habits) {
     return ListView.builder(
-      itemCount: _habits.length,
+      itemCount: habits.length,
       itemBuilder: (context, index) {
-        final habit = _habits[index];
+        final habit = habits[index];
         final isSelected = _selectedHabitIds.contains(habit.id);
 
         return Card(
@@ -360,7 +356,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 : const Icon(Icons.track_changes),
             title: Text(habit.name),
             subtitle: FutureBuilder<int>(
-              future: _habitManager.getCurrentStreak(habit.id!),
+              // Use Provider for streak calculation
+              future: context.read<HabitProvider>().getCurrentStreak(habit.id!),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   final streak = snapshot.data!;
@@ -387,8 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context) => HabitDetailScreen(habit: habit),
                   ),
                 );
-                // Refresh habits list after returning (in case streaks changed)
-                _loadHabits();
+                // Provider will automatically refresh if needed
               }
             },
             onLongPress: () {

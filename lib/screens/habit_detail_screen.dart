@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../models/habit.dart';
-import '../models/habit_manager.dart';
 import '../models/habit_record.dart';
+import '../providers/habit_provider.dart';
 import '../widgets/day_detail_bottom_sheet.dart';
 import '../widgets/statistics_widget.dart';
 import 'notes_list_screen.dart';
@@ -18,12 +19,14 @@ class HabitDetailScreen extends StatefulWidget {
 }
 
 class _HabitDetailScreenState extends State<HabitDetailScreen> {
-  final HabitManager _habitManager = HabitManager();
+  // Keep only local UI state
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
-  Map<String, HabitRecord> _records = {}; // date -> record
-  bool _isLoading = true;
+
+  // Data will come from Provider
+  Map<String, HabitRecord> _records = {};
   int _currentStreak = 0;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -33,21 +36,29 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
 
   Future<void> _loadRecords() async {
     setState(() => _isLoading = true);
+
+    final provider = context.read<HabitProvider>();
+
     try {
-      final records = await _habitManager.getRecordsForHabit(widget.habit.id!);
+      // Use Provider instead of HabitManager
+      final records = await provider.getRecordsForHabit(widget.habit.id!);
+      final streak = await provider.getCurrentStreak(widget.habit.id!);
+
       final recordsMap = <String, HabitRecord>{};
       for (var record in records) {
         recordsMap[record.date] = record;
       }
-      final streak = await _habitManager.getCurrentStreak(widget.habit.id!);
-      setState(() {
-        _records = recordsMap;
-        _currentStreak = streak;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
+
       if (mounted) {
+        setState(() {
+          _records = recordsMap;
+          _currentStreak = streak;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading records: $e')),
         );
@@ -65,13 +76,12 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
       builder: (context) => DayDetailBottomSheet(
         date: day,
         existingRecord: existingRecord,
-        habitManager: _habitManager,
         habitId: widget.habit.id!,
       ),
     );
 
     if (result == true) {
-      // Refresh data after save/delete
+      // Refresh data after save/delete - Provider handles the update
       await _loadRecords();
     }
   }
@@ -128,7 +138,6 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                 isScrollControlled: true,
                 builder: (context) => StatisticsWidget(
                   habitId: widget.habit.id!,
-                  habitManager: _habitManager,
                 ),
               );
             },
@@ -325,7 +334,8 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                               ),
                               const SizedBox(height: 16),
                               FutureBuilder<Map<String, dynamic>>(
-                                future: _habitManager
+                                future: context
+                                    .read<HabitProvider>()
                                     .getHabitStatistics(widget.habit.id!),
                                 builder: (context, snapshot) {
                                   if (!snapshot.hasData) {
@@ -360,7 +370,6 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                                             builder: (context) =>
                                                 StatisticsWidget(
                                               habitId: widget.habit.id!,
-                                              habitManager: _habitManager,
                                             ),
                                           );
                                         },

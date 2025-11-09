@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/habit_provider.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
@@ -11,13 +13,18 @@ class MultiHabitTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Multi-Habit Tracker',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
-        useMaterial3: true,
+    // Wrap the entire app with ChangeNotifierProvider
+    // This makes HabitProvider available to all widgets in the tree
+    return ChangeNotifierProvider(
+      create: (_) => HabitProvider(),
+      child: MaterialApp(
+        title: 'Multi-Habit Tracker',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+          useMaterial3: true,
+        ),
+        home: const HomeScreen(),
       ),
-      home: const HomeScreen(),
     );
   }
 }

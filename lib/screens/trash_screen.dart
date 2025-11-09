@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/habit.dart';
-import '../models/habit_manager.dart';
+import '../providers/habit_provider.dart';
 
 class TrashScreen extends StatefulWidget {
   const TrashScreen({super.key});
@@ -11,55 +11,35 @@ class TrashScreen extends StatefulWidget {
 }
 
 class _TrashScreenState extends State<TrashScreen> {
-  final HabitManager _habitManager = HabitManager();
-  List<Habit> _deletedHabits = [];
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    _loadDeletedHabits();
-  }
-
-  Future<void> _loadDeletedHabits() async {
-    setState(() => _isLoading = true);
-    try {
-      final habits = await _habitManager.loadDeletedHabits();
-      setState(() {
-        _deletedHabits = habits;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading trash: $e')),
-        );
-      }
-    }
+    // Load deleted habits when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HabitProvider>().loadDeletedHabits();
+    });
   }
 
   Future<void> _restoreHabit(Habit habit) async {
-    try {
-      await _habitManager.restoreHabit(habit.id!);
-      await _loadDeletedHabits();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${habit.name} restored successfully!'),
-            action: SnackBarAction(
-              label: 'OK',
-              onPressed: () {},
-            ),
+    final provider = context.read<HabitProvider>();
+    final success = await provider.restoreHabit(habit.id!);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? '${habit.name} restored successfully!'
+                : provider.errorMessage ?? 'Error restoring habit',
           ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error restoring habit: $e')),
-        );
-      }
+          action: success
+              ? SnackBarAction(
+                  label: 'OK',
+                  onPressed: () {},
+                )
+              : null,
+        ),
+      );
     }
   }
 
@@ -90,28 +70,28 @@ class _TrashScreenState extends State<TrashScreen> {
     );
 
     if (confirmed == true) {
-      try {
-        await _habitManager.permanentlyDeleteHabit(habit.id!);
-        await _loadDeletedHabits();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${habit.name} permanently deleted'),
+      final provider = context.read<HabitProvider>();
+      final success = await provider.permanentlyDeleteHabit(habit.id!);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? '${habit.name} permanently deleted'
+                  : provider.errorMessage ?? 'Error deleting habit',
             ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting habit: $e')),
-          );
-        }
+          ),
+        );
       }
     }
   }
 
   Future<void> _emptyTrash() async {
-    if (_deletedHabits.isEmpty) return;
+    final provider = context.read<HabitProvider>();
+    final deletedHabits = provider.deletedHabits;
+
+    if (deletedHabits.isEmpty) return;
 
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
@@ -119,7 +99,7 @@ class _TrashScreenState extends State<TrashScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Empty Trash?'),
         content: Text(
-          'Are you sure you want to permanently delete all ${_deletedHabits.length} habit(s)?\n\n'
+          'Are you sure you want to permanently delete all ${deletedHabits.length} habit(s)?\n\n'
           'This action cannot be undone.',
         ),
         actions: [
@@ -139,22 +119,20 @@ class _TrashScreenState extends State<TrashScreen> {
     );
 
     if (confirmed == true) {
-      try {
-        for (var habit in _deletedHabits) {
-          await _habitManager.permanentlyDeleteHabit(habit.id!);
-        }
-        await _loadDeletedHabits();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Trash emptied successfully')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error emptying trash: $e')),
-          );
-        }
+      final provider = context.read<HabitProvider>();
+
+      // Get current deleted habits before deletion
+      final habitsToDelete = provider.deletedHabits;
+
+      // Delete all habits
+      for (var habit in habitsToDelete) {
+        await provider.permanentlyDeleteHabit(habit.id!);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Trash emptied successfully')),
+        );
       }
     }
   }
@@ -179,11 +157,16 @@ class _TrashScreenState extends State<TrashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch Provider for changes
+    final provider = context.watch<HabitProvider>();
+    final deletedHabits = provider.deletedHabits;
+    final isLoading = provider.isLoading;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Trash'),
         actions: [
-          if (_deletedHabits.isNotEmpty)
+          if (deletedHabits.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep),
               onPressed: _emptyTrash,
@@ -191,9 +174,9 @@ class _TrashScreenState extends State<TrashScreen> {
             ),
         ],
       ),
-      body: _isLoading
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _deletedHabits.isEmpty
+          : deletedHabits.isEmpty
               ? _buildEmptyState()
               : Column(
                   children: [
@@ -226,9 +209,9 @@ class _TrashScreenState extends State<TrashScreen> {
                     Expanded(
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: _deletedHabits.length,
+                        itemCount: deletedHabits.length,
                         itemBuilder: (context, index) {
-                          return _buildDeletedHabitCard(_deletedHabits[index]);
+                          return _buildDeletedHabitCard(deletedHabits[index]);
                         },
                       ),
                     ),

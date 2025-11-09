@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import '../models/habit_manager.dart';
+import 'package:provider/provider.dart';
+import '../providers/habit_provider.dart';
 
 class StatisticsWidget extends StatelessWidget {
   final int habitId;
-  final HabitManager habitManager;
 
   const StatisticsWidget({
     super.key,
     required this.habitId,
-    required this.habitManager,
   });
 
   @override
@@ -25,7 +24,7 @@ class StatisticsWidget extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: FutureBuilder<Map<String, dynamic>>(
-            future: habitManager.getHabitStatistics(habitId),
+            future: context.read<HabitProvider>().getHabitStatistics(habitId),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
