@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/habit_manager.dart';
 import '../models/habit.dart';
+import 'habit_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -354,15 +355,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 return const Text('Loading...');
               },
             ),
-            onTap: () {
+            onTap: () async {
               if (_isSelectionMode) {
                 _toggleSelection(habit.id!);
               } else {
-                // TODO: Navigate to habit detail screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text('Opening ${habit.name} detail screen...')),
+                // Navigate to habit detail screen
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HabitDetailScreen(habit: habit),
+                  ),
                 );
+                // Refresh habits list after returning (in case streaks changed)
+                _loadHabits();
               }
             },
             onLongPress: () {
