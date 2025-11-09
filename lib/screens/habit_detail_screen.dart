@@ -6,6 +6,7 @@ import '../models/habit_manager.dart';
 import '../models/habit_record.dart';
 import '../widgets/day_detail_bottom_sheet.dart';
 import '../widgets/statistics_widget.dart';
+import 'notes_list_screen.dart';
 
 class HabitDetailScreen extends StatefulWidget {
   final Habit habit;
@@ -103,6 +104,22 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
       appBar: AppBar(
         title: Text(widget.habit.name),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notes),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotesListScreen(
+                    habitId: widget.habit.id!,
+                  ),
+                ),
+              );
+              // Refresh after returning from notes screen
+              await _loadRecords();
+            },
+            tooltip: 'View All Notes',
+          ),
           IconButton(
             icon: const Icon(Icons.show_chart),
             onPressed: () {

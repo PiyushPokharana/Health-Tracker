@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/habit_manager.dart';
 import '../models/habit.dart';
 import 'habit_detail_screen.dart';
+import 'notes_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -251,6 +252,20 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppBar(
       title: const Text('My Habits'),
       actions: [
+        IconButton(
+          icon: const Icon(Icons.notes),
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const NotesListScreen(),
+              ),
+            );
+            // Refresh after returning from notes screen
+            await _loadHabits();
+          },
+          tooltip: 'View All Notes',
+        ),
         IconButton(
           icon: const Icon(Icons.settings),
           onPressed: () {
