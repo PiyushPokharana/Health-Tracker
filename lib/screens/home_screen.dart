@@ -3,6 +3,7 @@ import '../models/habit_manager.dart';
 import '../models/habit.dart';
 import 'habit_detail_screen.dart';
 import 'notes_list_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -268,12 +269,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         IconButton(
           icon: const Icon(Icons.settings),
-          onPressed: () {
-            // TODO: Navigate to settings screen
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Settings coming soon!')),
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SettingsScreen(),
+              ),
             );
+            // Refresh after returning from settings
+            await _loadHabits();
           },
+          tooltip: 'Settings',
         ),
       ],
     );
