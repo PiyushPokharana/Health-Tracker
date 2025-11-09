@@ -172,11 +172,19 @@ Transform the current single-habit "Daily Success Tracker" into a comprehensive 
 - [x] 200 character limit on notes
 - [x] Note icon (📝) shown in text field
 
-### 5.3 Optional: Note Viewing
+### 5.3 Note Viewing ✅
 - [x] Notes displayed in bottom sheet when tapping day
 - [x] Notes editable at any time
-- [ ] Show notes in a list view (Future enhancement)
-- [ ] Search/filter notes (Future enhancement)
+- [x] Show notes in a list view (NotesListScreen)
+  - [x] View all notes across all habits
+  - [x] Filter by habit (when viewing from home screen)
+  - [x] View notes for specific habit (when viewing from habit detail screen)
+- [x] Search/filter notes
+  - [x] Real-time text search across note content and habit names
+  - [x] Filter by status (complete/missed/skipped)
+  - [x] Filter by habit (multi-select)
+  - [x] Filter by date range
+  - [x] Tap note to navigate to habit detail screen
 
 ---
 
@@ -354,28 +362,25 @@ Transform the current single-habit "Daily Success Tracker" into a comprehensive 
 
 ```
 lib/
-├── main.dart (update entry point)
+├── main.dart ✅ (updated entry point)
 ├── models/
-│   ├── habit.dart (NEW)
-│   ├── habit_record.dart (NEW)
-│   ├── habit_manager.dart (NEW)
-│   ├── database_helper.dart (MODIFY - major changes)
-│   ├── daily_record.dart (REMOVE or repurpose)
-│   └── daily_record_manager.dart (REMOVE)
+│   ├── habit.dart ✅
+│   ├── habit_record.dart ✅
+│   ├── habit_manager.dart ✅
+│   ├── database_helper.dart ✅ (major changes)
+│   ├── daily_record.dart (kept for backward compatibility)
+│   └── daily_record_manager.dart (kept for backward compatibility)
 ├── screens/
-│   ├── home_screen.dart (NEW - list of habits)
-│   ├── habit_detail_screen.dart (NEW - HBTC)
-│   ├── add_edit_habit_screen.dart (NEW)
-│   ├── settings_screen.dart (NEW)
-│   ├── trash_screen.dart (NEW)
-│   └── daily_success_screen.dart (REMOVE)
+│   ├── home_screen.dart ✅ (list of habits)
+│   ├── habit_detail_screen.dart ✅ (HBTC)
+│   ├── notes_list_screen.dart ✅ (NEW - view/search all notes)
+│   ├── settings_screen.dart (TODO)
+│   ├── trash_screen.dart (TODO)
+│   └── daily_success_screen.dart (kept for backward compatibility)
 └── widgets/
-    ├── habit_list_tile.dart (NEW)
-    ├── selection_app_bar.dart (NEW)
-    ├── day_detail_bottom_sheet.dart (NEW)
-    ├── statistics_widget.dart (NEW)
-    ├── streak_display.dart (NEW)
-    └── status_selector.dart (NEW)
+    ├── day_detail_bottom_sheet.dart ✅
+    ├── statistics_widget.dart ✅
+    └── (habit list tiles inline in HomeScreen)
 ```
 
 ---
@@ -392,16 +397,20 @@ lib/
 
 ---
 
-## Current Status: Phase 3 Complete ✅ - Core MVP Ready!
+## Current Status: Phase 5 Complete ✅ - Enhanced MVP Ready!
 
 **Completed:** 
 - Phase 1 - Database & Data Models ✅
 - Phase 2 - Home Screen (Habit List) ✅
 - Phase 3 - Habit Detail Screen (HBTC) ✅
 - Phase 4 - Three-Status System ✅
-- Phase 5 - Notes System ✅
+- Phase 5 - Notes System (Full Implementation) ✅
+  - Note storage and CRUD ✅
+  - Note UI in bottom sheet ✅
+  - Note indicator on calendar ✅
+  - Notes list screen with search/filter ✅
 - Phase 7 - Data Migration ✅
 
-**Next Step:** Phase 6 - Trash & Restore System (Settings screen)
+**Next Step:** Phase 6 - Trash & Restore System (Settings & Trash screens)
 
 **Last Updated:** November 9, 2025
