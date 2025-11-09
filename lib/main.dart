@@ -1,36 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart' as tc;
-import 'package:intl/intl.dart';
-import 'models/daily_record.dart';
-import 'models/daily_record_manager.dart';
+import 'screens/home_screen.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Required for sqflite
-  final recordManager = DailyRecordManager();
-  await recordManager.loadRecords(); // Load data from the database
-  runApp(DailySuccessTrackerApp(recordManager: recordManager));
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MultiHabitTrackerApp());
 }
 
-class DailySuccessTrackerApp extends StatelessWidget {
-  final DailyRecordManager recordManager;
-
-  const DailySuccessTrackerApp({Key? key, required this.recordManager})
-      : super(key: key);
+class MultiHabitTrackerApp extends StatelessWidget {
+  const MultiHabitTrackerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Daily Success Tracker',
+      title: 'Multi-Habit Tracker',
       theme: ThemeData(
-        primarySwatch: Colors.orange,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+        useMaterial3: true,
       ),
-      home: DailySuccessHomePage(
-        recordManager: recordManager,
-      ),
+      home: const HomeScreen(),
     );
   }
 }
 
+// OLD CODE BELOW - Keep for reference, remove later
+/*
 class DailySuccessHomePage extends StatefulWidget {
   final DailyRecordManager recordManager;
 
@@ -417,3 +410,4 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
     );
   }
 }
+*/
