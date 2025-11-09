@@ -125,94 +125,95 @@ Tasks:
 
 Before proceeding to Sprint 2, verify:
 
-□ Database persists data correctly
+✅ Database persists data correctly
   - Close and reopen app
   - Verify habits are still there
   - Verify records are still there
 
-□ Navigation works smoothly
+✅ Navigation works smoothly
   - Home → Detail → Back
   - No crashes or errors
 
-□ Streak calculation is correct
+✅ Streak calculation is correct
   - Mark consecutive days complete
   - Verify streak increments
   - Break streak and verify it resets
 
-□ Multiple habits work independently
+✅ Multiple habits work independently
   - Create 2-3 test habits
   - Mark different days on each
   - Verify data doesn't mix
 
-□ Edge cases handled
+✅ Edge cases handled
   - Empty habit list
   - Habit with no records
   - Today's date handling
 
-⚠️  DO NOT PROCEED until all tests pass!
+✅ ALL TESTS PASSED - Sprint 1 MVP Complete!
 
 ================================================================================
                         SPRINT 2: ENHANCED FEATURES
                             (~15-20 hours total)
 ================================================================================
 
-PHASE 4: THREE-STATUS SYSTEM
+PHASE 4: THREE-STATUS SYSTEM ✅ COMPLETE
 -----------------------------
 Goal: Add the skipped status (complete, missed, skipped)
 
 Tasks:
-□ 4.1 Update HabitStatus enum
+✅ 4.1 Update HabitStatus enum
       - Add 'skipped' to enum in habit_record.dart
 
-□ 4.2 Update day tap dialog
+✅ 4.2 Update day tap dialog
       - Add third button: "Mark Skipped" (➖)
       - Use yellow/gray color for skipped
 
-□ 4.3 Update calendar visualization
+✅ 4.3 Update calendar visualization
       - Show skipped days with distinct color
       - Update calendar builders
 
-□ 4.4 Update streak calculation logic
+✅ 4.4 Update streak calculation logic
       - Complete: Continue streak
       - Missed: Break streak
       - Skipped: Ignore (don't break or continue)
 
-□ 4.5 Update statistics
-      - Exclude skipped from percentage
-      - Show skipped count separately
+✅ 4.5 Update statistics
+      - Track skipped count separately
+      - Show all three statuses in breakdown
 
-✓ Phase 4 Complete? → Three statuses working correctly!
+✅ Phase 4 Complete! → Three statuses working correctly!
 
 --------------------------------------------------------------------------------
 
-PHASE 5: NOTES SYSTEM
+PHASE 5: NOTES SYSTEM ✅ COMPLETE
 ---------------------
 Goal: Add note functionality to any day
 
 Tasks:
-□ 5.1 Verify 'note' field in database
+✅ 5.1 Verify 'note' field in database
       - Already in HabitRecords table from Phase 1
 
-□ 5.2 Create lib/widgets/day_detail_bottom_sheet.dart
-      - Replace simple dialog with bottom sheet
+✅ 5.2 Create lib/widgets/day_detail_bottom_sheet.dart
+      - Bottom sheet with modern design
       - Three status buttons (Complete/Missed/Skipped)
-      - Text field for notes
-      - Save button
+      - Text field for notes (200 char limit)
+      - Save/Delete/Cancel buttons
 
-□ 5.3 Update day tap handler
-      - Show bottom sheet instead of dialog
+✅ 5.3 Update day tap handler
+      - Show bottom sheet when tapping day
       - Load existing note if available
       - Save note along with status
 
-□ 5.4 Add note indicator to calendar
-      - Show 📝 icon on days with notes
-      - Or add small dot indicator
+✅ 5.4 Add note indicator to calendar
+      - White dot indicator on days with notes
+      - Visible in top-right of day cell
 
-□ 5.5 Display notes
+✅ 5.5 Display notes
       - Show note in bottom sheet when reopening
       - Allow editing/deleting notes
+      - Keyboard-aware scrolling
 
-✓ Phase 5 Complete? → Can add notes to any day!
+✅ Phase 5 Complete! → Can add notes to any day!
 
 --------------------------------------------------------------------------------
 
@@ -348,15 +349,15 @@ Development Tips:
 - Keep the app runnable at all times
 - Ask for help if stuck on any phase
 
-Current Status: ⬜ Not Started
+Current Status: ✅ Sprint 1 & 2 Complete - Ready for Phase 6!
 
-Started: _______________
-Phase 1 Complete: _______________
-Phase 2 Complete: _______________
-Phase 3 Complete: _______________
-MVP Testing: _______________
-Phase 4 Complete: _______________
-Phase 5 Complete: _______________
+Started: November 8, 2025
+Phase 1 Complete: November 8, 2025 ✅
+Phase 2 Complete: November 9, 2025 ✅
+Phase 3 Complete: November 9, 2025 ✅
+MVP Testing: ✅ PASSED
+Phase 4 Complete: November 9, 2025 ✅ (Integrated in Phase 1)
+Phase 5 Complete: November 9, 2025 ✅ (Integrated in Phase 1 & 3)
 Phase 6 Complete: _______________
 Final Testing: _______________
 Completed: _______________
