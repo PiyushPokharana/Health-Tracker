@@ -226,43 +226,43 @@ Tasks:
 
 --------------------------------------------------------------------------------
 
-PHASE 6: TRASH & RESTORE SYSTEM
+PHASE 6: TRASH & RESTORE SYSTEM ✅ COMPLETE
 --------------------------------
 Goal: Add delete/restore functionality
 
 Tasks:
-□ 6.1 Implement soft delete
+✅ 6.1 Implement soft delete
       - Update delete in HabitManager
       - Set isDeleted = 1, deletedAt = current timestamp
       - Filter deleted habits from home screen
 
-□ 6.2 Add delete option to home screen
+✅ 6.2 Add delete option to home screen
       - Long-press habit to show menu
       - "Delete" option moves to trash
       - Show confirmation dialog
 
-□ 6.3 Create lib/screens/trash_screen.dart
+✅ 6.3 Create lib/screens/trash_screen.dart
       - List all deleted habits
       - Show deletion date
       - Restore button
       - Permanent delete button
 
-□ 6.4 Create lib/screens/settings_screen.dart
+✅ 6.4 Create lib/screens/settings_screen.dart
       - Add to app bar on home screen
       - Link to trash screen
       - Other settings (optional)
 
-□ 6.5 Implement restore functionality
+✅ 6.5 Implement restore functionality
       - Restore button sets isDeleted = 0
       - Clear deletedAt timestamp
       - Return habit to home screen
 
-□ 6.6 Add 30-day auto-delete
+✅ 6.6 Add 30-day auto-delete
       - Check on app launch
       - Delete habits where deletedAt > 30 days
       - Run cleanup in HabitManager.loadHabits()
 
-✓ Phase 6 Complete? → Full trash system working!
+✅ Phase 6 Complete! → Full trash system working!
 
 ================================================================================
                       🧪 CHECKPOINT: TEST AGAIN + POLISH
@@ -358,7 +358,7 @@ Development Tips:
 - Keep the app runnable at all times
 - Ask for help if stuck on any phase
 
-Current Status: ✅ Sprint 1 & 2 Complete - Enhanced MVP with Full Notes System!
+Current Status: ✅ Sprint 1 & 2 Complete - Enhanced MVP with Full Notes & Trash System!
 
 Started: November 8, 2025
 Phase 1 Complete: November 8, 2025 ✅
@@ -367,8 +367,9 @@ Phase 3 Complete: November 9, 2025 ✅
 MVP Testing: ✅ PASSED
 Phase 4 Complete: November 9, 2025 ✅ (Integrated in Phase 1)
 Phase 5 Complete: November 9, 2025 ✅ (Full Implementation with Search/Filter)
-Phase 6 Complete: _______________
-Final Testing: _______________
+Phase 6 Complete: November 9, 2025 ✅ (Settings & Trash screens with Restore)
+Phase 7 Complete: November 8, 2025 ✅ (Data Migration in Phase 1)
+Final Testing: In Progress
 Completed: _______________
 
 ================================================================================

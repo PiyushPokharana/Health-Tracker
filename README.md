@@ -188,37 +188,45 @@ Transform the current single-habit "Daily Success Tracker" into a comprehensive 
 
 ---
 
-## Phase 6: Trash & Restore System
+## Phase 6: Trash & Restore System ✅ **COMPLETE**
 
-### 6.1 Create Trash Screen
-- [ ] Create `lib/screens/trash_screen.dart`
-  - [ ] List all deleted habits
-  - [ ] Show deletion date
-  - [ ] Restore button per habit
-  - [ ] Permanent delete button
-  - [ ] Empty trash message
+### 6.1 Create Trash Screen ✅
+- [x] Create `lib/screens/trash_screen.dart`
+  - [x] List all deleted habits
+  - [x] Show deletion date
+  - [x] Restore button per habit
+  - [x] Permanent delete button
+  - [x] Empty trash message
+  - [x] Show days in trash with countdown to auto-deletion
+  - [x] Info banner about 30-day auto-delete
+  - [x] Empty Trash button to delete all
 
-### 6.2 Implement Soft Delete
-- [ ] Update delete operation to set `isDeleted = 1`
-- [ ] Set `deletedAt` timestamp
-- [ ] Filter deleted habits from home screen
+### 6.2 Implement Soft Delete ✅
+- [x] Update delete operation to set `isDeleted = 1`
+- [x] Set `deletedAt` timestamp
+- [x] Filter deleted habits from home screen
+- [x] Already implemented in Phase 1 HabitManager
 
-### 6.3 Implement Restore
-- [ ] Create restore method in HabitManager
-- [ ] Set `isDeleted = 0` and clear `deletedAt`
-- [ ] Refresh home screen after restore
+### 6.3 Implement Restore ✅
+- [x] Create restore method in HabitManager
+- [x] Set `isDeleted = 0` and clear `deletedAt`
+- [x] Refresh home screen after restore
+- [x] Show success feedback with SnackBar
 
-### 6.4 Implement 30-Day Auto-Delete
-- [ ] Create cleanup method in HabitManager
-- [ ] Check trash on app launch
-- [ ] Permanently delete habits older than 30 days
-- [ ] Optional: Show notification before auto-delete
+### 6.4 Implement 30-Day Auto-Delete ✅
+- [x] Create cleanup method in HabitManager
+- [x] Check trash on app launch
+- [x] Permanently delete habits older than 30 days
+- [x] Already implemented in Phase 1 loadHabits()
 
-### 6.5 Add Trash to Settings
-- [ ] Create `lib/screens/settings_screen.dart`
-  - [ ] Link to trash screen
-  - [ ] Other settings (theme, notifications, etc.)
-- [ ] Add settings icon to home screen app bar
+### 6.5 Add Trash to Settings ✅
+- [x] Create `lib/screens/settings_screen.dart`
+  - [x] Link to trash screen
+  - [x] Other settings (theme, notifications, etc.) with placeholders
+  - [x] About dialog with app information
+  - [x] Section-based layout (Data Management, About, Appearance, Data, Help)
+- [x] Add settings icon to home screen app bar
+- [x] Wire up navigation from home screen
 
 ---
 
@@ -348,13 +356,13 @@ Transform the current single-habit "Daily Success Tracker" into a comprehensive 
 | Phase 3: Habit Detail Screen | 12-18 hours | ✅ **COMPLETE** |
 | Phase 4: Three-Status System | 4-6 hours | ✅ **COMPLETE** (Done in Phase 1) |
 | Phase 5: Notes System | 4-6 hours | ✅ **COMPLETE** (Done in Phase 1 & 3) |
-| Phase 6: Trash System | 6-8 hours | ⬜ Not Started |
+| Phase 6: Trash System | 6-8 hours | ✅ **COMPLETE** |
 | Phase 7: Data Migration | 4-6 hours | ✅ **COMPLETE** (Done in Phase 1) |
 | Phase 8: State Management | 8-12 hours | ⬜ Not Started |
 | Phase 9: UI/UX Polish | 10-15 hours | ⬜ Not Started |
 | Phase 10: Testing | 8-12 hours | ⬜ Not Started |
 | Phase 11: Documentation | 4-6 hours | ⬜ Not Started |
-| **TOTAL** | **78-116 hours** | **~46-69 hours completed** |
+| **TOTAL** | **78-116 hours** | **~52-77 hours completed** |
 
 ---
 
@@ -373,9 +381,9 @@ lib/
 ├── screens/
 │   ├── home_screen.dart ✅ (list of habits)
 │   ├── habit_detail_screen.dart ✅ (HBTC)
-│   ├── notes_list_screen.dart ✅ (NEW - view/search all notes)
-│   ├── settings_screen.dart (TODO)
-│   ├── trash_screen.dart (TODO)
+│   ├── notes_list_screen.dart ✅ (view/search all notes)
+│   ├── settings_screen.dart ✅ (settings hub)
+│   ├── trash_screen.dart ✅ (manage deleted habits)
 │   └── daily_success_screen.dart (kept for backward compatibility)
 └── widgets/
     ├── day_detail_bottom_sheet.dart ✅
@@ -397,7 +405,7 @@ lib/
 
 ---
 
-## Current Status: Phase 5 Complete ✅ - Enhanced MVP Ready!
+## Current Status: Phase 6 Complete ✅ - Full Feature MVP Ready!
 
 **Completed:** 
 - Phase 1 - Database & Data Models ✅
@@ -409,8 +417,12 @@ lib/
   - Note UI in bottom sheet ✅
   - Note indicator on calendar ✅
   - Notes list screen with search/filter ✅
+- Phase 6 - Trash & Restore System ✅
+  - Settings screen with sections ✅
+  - Trash screen with restore/delete ✅
+  - 30-day auto-cleanup ✅
 - Phase 7 - Data Migration ✅
 
-**Next Step:** Phase 6 - Trash & Restore System (Settings & Trash screens)
+**Next Step:** Phase 8 - State Management (Optional) or Phase 9 - UI/UX Polish
 
 **Last Updated:** November 9, 2025
