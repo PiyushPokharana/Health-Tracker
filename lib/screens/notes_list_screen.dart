@@ -233,7 +233,9 @@ class _NotesListScreenState extends State<NotesListScreen> {
                 label: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('✅ Complete'),
+                    Icon(Icons.check_circle_rounded, size: 16),
+                    SizedBox(width: 4),
+                    Text('Complete'),
                   ],
                 ),
                 selected: _selectedStatuses.contains(HabitStatus.complete),
@@ -251,7 +253,9 @@ class _NotesListScreenState extends State<NotesListScreen> {
                 label: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('❌ Missed'),
+                    Icon(Icons.cancel_rounded, size: 16),
+                    SizedBox(width: 4),
+                    Text('Missed'),
                   ],
                 ),
                 selected: _selectedStatuses.contains(HabitStatus.missed),
@@ -269,7 +273,9 @@ class _NotesListScreenState extends State<NotesListScreen> {
                 label: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('➖ Skipped'),
+                    Icon(Icons.do_not_disturb_on_rounded, size: 16),
+                    SizedBox(width: 4),
+                    Text('Skipped'),
                   ],
                 ),
                 selected: _selectedStatuses.contains(HabitStatus.skipped),
@@ -411,9 +417,10 @@ class _NotesListScreenState extends State<NotesListScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: Text(
+                      child: Icon(
                         _getStatusIcon(record.status),
-                        style: const TextStyle(fontSize: 16),
+                        size: 18,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -510,22 +517,22 @@ class _NotesListScreenState extends State<NotesListScreen> {
   Color _getStatusColor(HabitStatus status) {
     switch (status) {
       case HabitStatus.complete:
-        return Colors.green.shade100;
+        return const Color(0xFF50C878).withOpacity(0.2); // Emerald green light
       case HabitStatus.missed:
-        return Colors.red.shade100;
+        return const Color(0xFFB00020).withOpacity(0.2); // Error red light
       case HabitStatus.skipped:
-        return Colors.amber.shade100;
+        return const Color(0xFFD4AF37).withOpacity(0.2); // Gold light
     }
   }
 
-  String _getStatusIcon(HabitStatus status) {
+  IconData _getStatusIcon(HabitStatus status) {
     switch (status) {
       case HabitStatus.complete:
-        return '✅';
+        return Icons.check_circle_rounded;
       case HabitStatus.missed:
-        return '❌';
+        return Icons.cancel_rounded;
       case HabitStatus.skipped:
-        return '➖';
+        return Icons.do_not_disturb_on_rounded;
     }
   }
 }

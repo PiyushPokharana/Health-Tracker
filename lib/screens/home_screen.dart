@@ -14,7 +14,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   bool _isSelectionMode = false;
   final Set<int> _selectedHabitIds = {};
   late AnimationController _fabAnimationController;
@@ -30,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _fabScaleAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeInOut),
     );
-    
+
     Future.microtask(
       () => context.read<HabitProvider>().loadHabits(),
     );
@@ -97,7 +98,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   : provider.errorMessage ?? 'Error adding habit',
             ),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -288,10 +290,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   PreferredSizeWidget _buildNormalAppBar() {
     return AppBar(
       title: Text(
-        'Upgrade',
+        'My Habits',
         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-          color: Colors.white,
-        ),
+              color: Colors.white,
+            ),
       ),
       actions: [
         Semantics(
@@ -387,14 +389,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           Text(
             'No habits yet',
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFFE8E6E3) // Light text for dark mode
+                      : Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
             'Start building better habits today',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey[600],
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFFB0B0B0)
+                      : Colors.grey[600],
                 ),
           ),
           const SizedBox(height: 32),
@@ -432,7 +439,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color: isSelected 
+                    color: isSelected
                         ? Theme.of(context).colorScheme.secondary
                         : Colors.grey.shade200,
                     width: isSelected ? 2 : 1,
@@ -447,8 +454,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       await Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) =>
-                              HabitDetailScreen(habit: habit),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  HabitDetailScreen(habit: habit),
                           transitionsBuilder:
                               (context, animation, secondaryAnimation, child) {
                             const begin = Offset(1.0, 0.0);
@@ -499,7 +507,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               gradient: LinearGradient(
                                 colors: [
                                   Theme.of(context).colorScheme.secondary,
-                                  Theme.of(context).colorScheme.secondary.withOpacity(0.7),
+                                  Theme.of(context)
+                                      .colorScheme
+                                      .secondary
+                                      .withOpacity(0.7),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -539,21 +550,39 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           streak > 0
                                               ? '$streak day${streak > 1 ? 's' : ''} streak'
                                               : 'No streak yet',
-                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                            color: streak > 0 
-                                                ? Theme.of(context).colorScheme.secondary
-                                                : Colors.grey[600],
-                                            fontWeight: streak > 0 ? FontWeight.w500 : FontWeight.w400,
-                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                color: streak > 0
+                                                    ? Theme.of(context)
+                                                        .colorScheme
+                                                        .secondary
+                                                    : (Theme.of(context)
+                                                                .brightness ==
+                                                            Brightness.dark
+                                                        ? const Color(
+                                                            0xFFB0B0B0)
+                                                        : Colors.grey[600]),
+                                                fontWeight: streak > 0
+                                                    ? FontWeight.w500
+                                                    : FontWeight.w400,
+                                              ),
                                         ),
                                       ],
                                     );
                                   }
                                   return Text(
                                     'Loading...',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Colors.grey[600],
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(context).brightness ==
+                                                  Brightness.dark
+                                              ? const Color(0xFFB0B0B0)
+                                              : Colors.grey[600],
+                                        ),
                                   );
                                 },
                               ),
@@ -563,7 +592,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         if (!_isSelectionMode)
                           Icon(
                             Icons.chevron_right_rounded,
-                            color: Colors.grey[400],
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(0xFF808080)
+                                    : Colors.grey[400],
                           ),
                       ],
                     ),

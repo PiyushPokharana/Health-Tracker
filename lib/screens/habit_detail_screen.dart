@@ -18,14 +18,15 @@ class HabitDetailScreen extends StatefulWidget {
   State<HabitDetailScreen> createState() => _HabitDetailScreenState();
 }
 
-class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTickerProviderStateMixin {
+class _HabitDetailScreenState extends State<HabitDetailScreen>
+    with SingleTickerProviderStateMixin {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
 
   Map<String, HabitRecord> _records = {};
   int _currentStreak = 0;
   bool _isLoading = true;
-  
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -46,7 +47,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
     ).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
-    
+
     _loadRecords();
   }
 
@@ -85,7 +86,8 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
           SnackBar(
             content: Text('Error loading records: $e'),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -115,27 +117,28 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
   Color _getColorForStatus(HabitStatus status) {
     switch (status) {
       case HabitStatus.complete:
-        return Colors.green;
+        return const Color(0xFF50C878); // Emerald green
       case HabitStatus.missed:
-        return Colors.red.shade300;
+        return const Color(0xFFB00020); // Error red
       case HabitStatus.skipped:
-        return Colors.amber.shade300;
+        return const Color(0xFFD4AF37); // Gold
     }
   }
 
-  String _getIconForStatus(HabitStatus status) {
+  IconData _getIconForStatus(HabitStatus status) {
     switch (status) {
       case HabitStatus.complete:
-        return '✅';
+        return Icons.check_rounded;
       case HabitStatus.missed:
-        return '❌';
+        return Icons.close_rounded;
       case HabitStatus.skipped:
-        return '➖';
+        return Icons.remove_rounded;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
@@ -201,19 +204,17 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                       width: double.infinity,
                       padding: const EdgeInsets.all(32),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.secondary,
-                            Theme.of(context).colorScheme.secondary.withOpacity(0.8),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary, // Solid navy blue
                         boxShadow: [
                           BoxShadow(
-                            color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
@@ -222,8 +223,18 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .secondary
+                                  .withOpacity(0.2), // Gold tint
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .secondary
+                                    .withOpacity(0.3),
+                                width: 2,
+                              ),
                             ),
                             child: const Text(
                               '🔥',
@@ -261,12 +272,14 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                           children: [
                             const SizedBox(height: 16),
                             Card(
-                              margin: const EdgeInsets.symmetric(horizontal: 16),
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: Padding(
                                 padding: const EdgeInsets.all(8),
                                 child: TableCalendar(
                                   firstDay: DateTime.utc(2020, 1, 1),
-                                  lastDay: DateTime.now().add(const Duration(days: 1)),
+                                  lastDay: DateTime.now()
+                                      .add(const Duration(days: 1)),
                                   focusedDay: _focusedDay,
                                   selectedDayPredicate: (day) =>
                                       isSameDay(_selectedDay, day),
@@ -287,26 +300,146 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                                   headerStyle: HeaderStyle(
                                     titleCentered: true,
                                     formatButtonVisible: false,
-                                    titleTextStyle: Theme.of(context).textTheme.titleLarge!,
+                                    titleTextStyle: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                          color: isDark
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                    leftChevronIcon: Icon(
+                                      Icons.chevron_left,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                    ),
+                                    rightChevronIcon: Icon(
+                                      Icons.chevron_right,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                              .withOpacity(0.05),
+                                          Theme.of(context)
+                                              .colorScheme
+                                              .secondary
+                                              .withOpacity(0.05),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  daysOfWeekStyle: DaysOfWeekStyle(
+                                    weekdayStyle: TextStyle(
+                                      color: isDark
+                                          ? const Color(0xFFD4AF37)
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    weekendStyle: TextStyle(
+                                      color: isDark
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .tertiary
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .tertiary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                   calendarStyle: CalendarStyle(
                                     todayDecoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Theme.of(context)
+                                              .colorScheme
+                                              .secondary
+                                              .withOpacity(0.3),
+                                          Theme.of(context)
+                                              .colorScheme
+                                              .secondary
+                                              .withOpacity(0.5),
+                                        ],
+                                      ),
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: Theme.of(context).colorScheme.primary,
-                                        width: 2,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
+                                        width: 2.5,
                                       ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary
+                                              .withOpacity(0.3),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                     todayTextStyle: TextStyle(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      fontWeight: FontWeight.w600,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
                                     ),
                                     selectedDecoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.secondary,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Theme.of(context).colorScheme.primary,
+                                          Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                              .withOpacity(0.8),
+                                        ],
+                                      ),
                                       shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                              .withOpacity(0.4),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    selectedTextStyle: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                    weekendTextStyle: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .tertiary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    defaultTextStyle: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onBackground,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                     outsideDaysVisible: false,
+                                    cellMargin: const EdgeInsets.all(6),
                                   ),
                                   calendarBuilders: CalendarBuilders(
                                     defaultBuilder: (context, day, focusedDay) {
@@ -315,25 +448,43 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                                       final record = _records[dateStr];
 
                                       if (record != null) {
+                                        final statusColor =
+                                            _getColorForStatus(record.status);
                                         return Container(
-                                          margin: const EdgeInsets.all(4),
+                                          margin: const EdgeInsets.all(3),
                                           decoration: BoxDecoration(
-                                            color: _getColorForStatus(record.status),
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                statusColor,
+                                                statusColor.withOpacity(0.8),
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
                                             shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color:
+                                                  statusColor.withOpacity(0.6),
+                                              width: 2,
+                                            ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: _getColorForStatus(record.status).withOpacity(0.4),
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 2),
+                                                color: statusColor
+                                                    .withOpacity(0.5),
+                                                blurRadius: 6,
+                                                spreadRadius: 1,
+                                                offset: const Offset(0, 3),
                                               ),
                                             ],
                                           ),
                                           child: Stack(
                                             children: [
                                               Center(
-                                                child: Text(
-                                                  _getIconForStatus(record.status),
-                                                  style: const TextStyle(fontSize: 20),
+                                                child: Icon(
+                                                  _getIconForStatus(
+                                                      record.status),
+                                                  size: 20,
+                                                  color: Colors.white,
                                                 ),
                                               ),
                                               if (record.note != null &&
@@ -344,7 +495,8 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                                                   child: Container(
                                                     width: 6,
                                                     height: 6,
-                                                    decoration: const BoxDecoration(
+                                                    decoration:
+                                                        const BoxDecoration(
                                                       color: Colors.white,
                                                       shape: BoxShape.circle,
                                                     ),
@@ -363,17 +515,22 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
 
                                       if (record != null) {
                                         return Container(
-                                          margin: const EdgeInsets.all(4),
+                                          margin: const EdgeInsets.all(3),
                                           decoration: BoxDecoration(
-                                            color: _getColorForStatus(record.status),
+                                            color: _getColorForStatus(
+                                                record.status),
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: Theme.of(context).colorScheme.primary,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                               width: 2,
                                             ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: _getColorForStatus(record.status).withOpacity(0.4),
+                                                color: _getColorForStatus(
+                                                        record.status)
+                                                    .withOpacity(0.4),
                                                 blurRadius: 4,
                                                 offset: const Offset(0, 2),
                                               ),
@@ -382,9 +539,11 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                                           child: Stack(
                                             children: [
                                               Center(
-                                                child: Text(
-                                                  _getIconForStatus(record.status),
-                                                  style: const TextStyle(fontSize: 20),
+                                                child: Icon(
+                                                  _getIconForStatus(
+                                                      record.status),
+                                                  size: 20,
+                                                  color: Colors.white,
                                                 ),
                                               ),
                                               if (record.note != null &&
@@ -395,7 +554,8 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                                                   child: Container(
                                                     width: 6,
                                                     height: 6,
-                                                    decoration: const BoxDecoration(
+                                                    decoration:
+                                                        const BoxDecoration(
                                                       color: Colors.white,
                                                       shape: BoxShape.circle,
                                                     ),
@@ -405,26 +565,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                                           ),
                                         );
                                       }
-                                      return Container(
-                                        margin: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Theme.of(context).colorScheme.primary,
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            day.day.toString(),
-                                            style: TextStyle(
-                                              color: Theme.of(context).colorScheme.primary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      );
+                                      return null;
                                     },
                                   ),
                                 ),
@@ -433,13 +574,16 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                             const SizedBox(height: 24),
                             // Quick Stats Preview
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     'Quick Stats',
-                                    style: Theme.of(context).textTheme.headlineMedium,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineMedium,
                                   ),
                                   const SizedBox(height: 16),
                                   FutureBuilder<Map<String, dynamic>>(
@@ -458,19 +602,24 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                                             children: [
                                               Expanded(
                                                 child: _buildStatCard(
-                                                  '🔥',
+                                                  Icons
+                                                      .local_fire_department_rounded,
                                                   '${stats['currentStreak']}',
                                                   'Current Streak',
-                                                  Theme.of(context).colorScheme.secondary,
+                                                  Theme.of(context)
+                                                      .colorScheme
+                                                      .secondary,
                                                 ),
                                               ),
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: _buildStatCard(
-                                                  '🏆',
+                                                  Icons.emoji_events_rounded,
                                                   '${stats['maxStreak']}',
                                                   'Best Streak',
-                                                  Theme.of(context).colorScheme.tertiary,
+                                                  Theme.of(context)
+                                                      .colorScheme
+                                                      .tertiary,
                                                 ),
                                               ),
                                             ],
@@ -480,19 +629,21 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                                             children: [
                                               Expanded(
                                                 child: _buildStatCard(
-                                                  '✅',
+                                                  Icons.check_circle_rounded,
                                                   '${stats['completionRate'].toStringAsFixed(0)}%',
                                                   'Completion',
-                                                  Colors.blue,
+                                                  const Color(
+                                                      0xFF50C878), // Emerald green
                                                 ),
                                               ),
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: _buildStatCard(
-                                                  '📊',
+                                                  Icons.calendar_month_rounded,
                                                   '${stats['totalRecords']}',
                                                   'Total Days',
-                                                  Colors.purple,
+                                                  const Color(
+                                                      0xFFE5E4E2), // Platinum silver
                                                 ),
                                               ),
                                             ],
@@ -503,18 +654,24 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                                               showModalBottomSheet(
                                                 context: context,
                                                 isScrollControlled: true,
-                                                backgroundColor: Colors.transparent,
+                                                backgroundColor:
+                                                    Colors.transparent,
                                                 builder: (context) =>
                                                     StatisticsWidget(
                                                   habitId: widget.habit.id!,
                                                 ),
                                               );
                                             },
-                                            icon: const Icon(Icons.analytics_rounded),
-                                            label: const Text('View Detailed Stats'),
+                                            icon: const Icon(
+                                                Icons.analytics_rounded),
+                                            label: const Text(
+                                                'View Detailed Stats'),
                                             style: FilledButton.styleFrom(
-                                              backgroundColor: Theme.of(context).colorScheme.primary,
-                                              minimumSize: const Size(double.infinity, 48),
+                                              backgroundColor: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                              minimumSize: const Size(
+                                                  double.infinity, 48),
                                             ),
                                           ),
                                         ],
@@ -527,39 +684,55 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
                             const SizedBox(height: 24),
                             // Legend
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: Card(
                                 child: Padding(
                                   padding: const EdgeInsets.all(16),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Legend',
-                                        style: Theme.of(context).textTheme.titleLarge,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge,
                                       ),
                                       const SizedBox(height: 12),
                                       _buildLegendItem(
-                                          '✅', 'Completed', Theme.of(context).colorScheme.tertiary),
+                                          Icons.check_rounded,
+                                          'Completed',
+                                          const Color(
+                                              0xFF50C878)), // Emerald green
                                       _buildLegendItem(
-                                          '❌', 'Missed', Colors.red.shade300),
+                                          Icons.close_rounded,
+                                          'Missed',
+                                          const Color(
+                                              0xFFEF5350)), // Brighter red
                                       _buildLegendItem(
-                                          '➖', 'Skipped', Colors.amber.shade300),
+                                          Icons.remove_rounded,
+                                          'Skipped',
+                                          const Color(0xFFD4AF37)), // Gold
                                       const SizedBox(height: 8),
                                       Row(
                                         children: [
                                           Container(
                                             width: 6,
                                             height: 6,
-                                            decoration: const BoxDecoration(
-                                              color: Colors.grey,
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? const Color(0xFFB0B0B0)
+                                                  : Colors.grey,
                                               shape: BoxShape.circle,
                                             ),
                                           ),
                                           const SizedBox(width: 12),
                                           Text(
                                             'Has note',
-                                            style: Theme.of(context).textTheme.bodyMedium,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium,
                                           ),
                                         ],
                                       ),
@@ -591,7 +764,9 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
     );
   }
 
-  Widget _buildStatCard(String emoji, String value, String label, Color color) {
+  Widget _buildStatCard(
+      IconData icon, String value, String label, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -601,9 +776,10 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
       ),
       child: Column(
         children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 28),
+          Icon(
+            icon,
+            size: 32,
+            color: color,
           ),
           const SizedBox(height: 8),
           Text(
@@ -618,8 +794,8 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
           Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey[600],
-            ),
+                  color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600],
+                ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -627,29 +803,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
     );
   }
 
-  Widget _buildStatRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegendItem(String icon, String label, Color color) {
+  Widget _buildLegendItem(IconData icon, String label, Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -662,9 +816,10 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> with SingleTicker
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Text(
+              child: Icon(
                 icon,
-                style: const TextStyle(fontSize: 16),
+                size: 18,
+                color: Colors.white,
               ),
             ),
           ),

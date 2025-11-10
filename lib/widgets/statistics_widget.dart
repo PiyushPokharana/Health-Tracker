@@ -86,14 +86,14 @@ class StatisticsWidget extends StatelessWidget {
                     title: 'Current Streak',
                     value: '${stats['currentStreak']} days',
                     subtitle: 'Keep it going!',
-                    color: Colors.orange,
+                    color: const Color(0xFFD4AF37), // Gold
                   ),
                   _buildStatCard(
                     context: context,
                     title: 'Best Streak',
                     value: '${stats['maxStreak']} days',
                     subtitle: 'Your personal record',
-                    color: Colors.deepOrange,
+                    color: const Color(0xFF001F3F), // Navy blue
                   ),
                   const SizedBox(height: 24),
 
@@ -105,7 +105,7 @@ class StatisticsWidget extends StatelessWidget {
                     value: '${stats['completionRate'].toStringAsFixed(1)}%',
                     subtitle:
                         '${stats['completedCount']} out of ${stats['totalRecords']} days',
-                    color: Colors.green,
+                    color: const Color(0xFF50C878), // Emerald green
                   ),
                   const SizedBox(height: 24),
 
@@ -117,31 +117,31 @@ class StatisticsWidget extends StatelessWidget {
                       child: Column(
                         children: [
                           _buildBreakdownRow(
-                            icon: '✅',
+                            icon: Icons.check_circle_rounded,
                             label: 'Completed',
                             count: stats['completedCount'],
-                            color: Colors.green,
+                            color: const Color(0xFF50C878), // Emerald green
                           ),
                           const Divider(),
                           _buildBreakdownRow(
-                            icon: '❌',
+                            icon: Icons.cancel_rounded,
                             label: 'Missed',
                             count: stats['missedCount'],
-                            color: Colors.red,
+                            color: const Color(0xFFB00020), // Error red
                           ),
                           const Divider(),
                           _buildBreakdownRow(
-                            icon: '➖',
+                            icon: Icons.do_not_disturb_on_rounded,
                             label: 'Skipped',
                             count: stats['skippedCount'],
-                            color: Colors.amber,
+                            color: const Color(0xFFD4AF37), // Gold
                           ),
                           const Divider(),
                           _buildBreakdownRow(
-                            icon: '📅',
+                            icon: Icons.calendar_today_rounded,
                             label: 'Total Days Tracked',
                             count: stats['totalRecords'],
-                            color: Colors.blue,
+                            color: const Color(0xFF001F3F), // Navy blue
                             bold: true,
                           ),
                         ],
@@ -185,13 +185,15 @@ class StatisticsWidget extends StatelessWidget {
                               child: LinearProgressIndicator(
                                 value: stats['completionRate'] / 100,
                                 minHeight: 20,
-                                backgroundColor: Colors.grey.shade200,
+                                backgroundColor:
+                                    const Color(0xFFE5E4E2), // Platinum silver
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                   stats['completionRate'] >= 80
-                                      ? Colors.green
+                                      ? const Color(0xFF50C878) // Emerald green
                                       : stats['completionRate'] >= 50
-                                          ? Colors.orange
-                                          : Colors.red,
+                                          ? const Color(0xFFD4AF37) // Gold
+                                          : const Color(
+                                              0xFFB00020), // Error red
                                 ),
                               ),
                             ),
@@ -257,7 +259,9 @@ class StatisticsWidget extends StatelessWidget {
             Text(
               subtitle,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey.shade600,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFFB0B0B0)
+                        : Colors.grey.shade600,
                   ),
             ),
           ],
@@ -267,7 +271,7 @@ class StatisticsWidget extends StatelessWidget {
   }
 
   Widget _buildBreakdownRow({
-    required String icon,
+    required IconData icon,
     required String label,
     required int count,
     required Color color,
@@ -277,9 +281,10 @@ class StatisticsWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Text(
+          Icon(
             icon,
-            style: const TextStyle(fontSize: 24),
+            size: 24,
+            color: color,
           ),
           const SizedBox(width: 12),
           Expanded(

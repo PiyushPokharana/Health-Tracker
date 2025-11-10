@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'providers/habit_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
@@ -14,147 +15,471 @@ class MultiHabitTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Wrap the entire app with ChangeNotifierProvider
-    // This makes HabitProvider available to all widgets in the tree
-    return ChangeNotifierProvider(
-      create: (_) => HabitProvider(),
-      child: MaterialApp(
-        title: 'Multi-Habit Tracker',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          // Premium color palette - Dark charcoal with amber/gold accents
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFFF59E0B), // Amber-500
-            brightness: Brightness.light,
-            primary: const Color(0xFF1F2937), // Gray-800 - sophisticated dark
-            secondary: const Color(0xFFF59E0B), // Amber-500 - premium gold
-            tertiary: const Color(0xFF10B981), // Emerald-500 for success
-            surface: const Color(0xFFFAFAFA), // Off-white
-            background: const Color(0xFFF5F5F5), // Light gray
-          ),
-          // Premium typography using Inter font family
-          textTheme: GoogleFonts.interTextTheme(
-            ThemeData.light().textTheme,
-          ).copyWith(
-            displayLarge: GoogleFonts.inter(
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
-            ),
-            displayMedium: GoogleFonts.inter(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
-            ),
-            displaySmall: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.25,
-            ),
-            headlineLarge: GoogleFonts.inter(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.25,
-            ),
-            headlineMedium: GoogleFonts.inter(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-            titleLarge: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-            titleMedium: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-            bodyLarge: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              height: 1.5,
-            ),
-            bodyMedium: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              height: 1.5,
-            ),
-          ),
-          // Premium card styling with subtle shadows
-          cardTheme: CardTheme(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.grey.shade200),
-            ),
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          ),
-          // Elevated button styling
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              textStyle: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          // Floating action button styling
-          floatingActionButtonTheme: FloatingActionButtonThemeData(
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          // App bar styling
-          appBarTheme: AppBarTheme(
-            elevation: 0,
-            centerTitle: false,
-            backgroundColor: const Color(0xFF1F2937),
-            foregroundColor: Colors.white,
-            titleTextStyle: GoogleFonts.inter(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          // Input decoration styling
-          inputDecorationTheme: InputDecorationTheme(
-            filled: true,
-            fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          ),
-          // Dialog styling
-          dialogTheme: DialogTheme(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            elevation: 8,
-          ),
-          // Bottom sheet styling
-          bottomSheetTheme: const BottomSheetThemeData(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
+    // Wrap the entire app with MultiProvider for multiple providers
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => HabitProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Multi-Habit Tracker',
+            debugShowCheckedModeBanner: false,
+            themeMode: themeProvider.materialThemeMode,
+            theme: _buildLightTheme(),
+            darkTheme: _buildDarkTheme(),
+            home: const HomeScreen(),
+          );
+        },
+      ),
+    );
+  }
+
+  ThemeData _buildLightTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      // Premium color palette - Navy blue + Gold + Emerald green + Black + White + Platinum silver
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFFD4AF37), // Gold
+        brightness: Brightness.light,
+        primary: const Color(0xFF001F3F), // Navy blue - deep and sophisticated
+        secondary: const Color(0xFFD4AF37), // Gold - luxury accent
+        tertiary: const Color(0xFF50C878), // Emerald green - success and growth
+        surface: const Color(0xFFFFFFFF), // Pure white
+        background:
+            const Color(0xFFE5E4E2), // Platinum silver - elegant background
+        onPrimary: const Color(0xFFFFFFFF), // White text on navy
+        onSecondary: const Color(0xFF000000), // Black text on gold
+        onTertiary: const Color(0xFFFFFFFF), // White text on emerald
+        onSurface: const Color(0xFF000000), // Black text on white
+        onBackground: const Color(0xFF000000), // Black text on platinum
+        error: const Color(0xFFB00020), // Error red
+        outline: const Color(0xFF9CA3AF), // Subtle gray outline
+      ),
+      // Premium typography using Inter font family
+      textTheme: GoogleFonts.interTextTheme(
+        ThemeData.light().textTheme,
+      ).copyWith(
+        displayLarge: GoogleFonts.inter(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
+        ),
+        displayMedium: GoogleFonts.inter(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
+        ),
+        displaySmall: GoogleFonts.inter(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.25,
+        ),
+        headlineLarge: GoogleFonts.inter(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.25,
+        ),
+        headlineMedium: GoogleFonts.inter(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        titleLarge: GoogleFonts.inter(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+        titleMedium: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+        bodyLarge: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          height: 1.5,
+        ),
+        bodyMedium: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          height: 1.5,
+        ),
+      ),
+      // Premium card styling with subtle shadows
+      cardTheme: CardTheme(
+        elevation: 2,
+        shadowColor:
+            const Color(0xFF001F3F).withOpacity(0.1), // Navy blue shadow
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: const Color(0xFFE5E4E2)
+                .withOpacity(0.8), // Platinum silver border
+            width: 1.5,
           ),
         ),
-        home: const HomeScreen(),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        color: Colors.white,
+      ),
+      // Elevated button styling
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          backgroundColor: const Color(0xFFD4AF37), // Gold background
+          foregroundColor: const Color(0xFF000000), // Black text
+        ),
+      ),
+      // Text button styling
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          foregroundColor: const Color(0xFF001F3F), // Navy blue
+        ),
+      ),
+      // Outlined button styling
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          foregroundColor: const Color(0xFF001F3F), // Navy blue
+          side: const BorderSide(color: Color(0xFF001F3F), width: 1.5),
+        ),
+      ),
+      // Floating action button styling
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        elevation: 6,
+        backgroundColor: const Color(0xFFD4AF37), // Gold
+        foregroundColor: const Color(0xFF000000), // Black text/icon
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      // App bar styling
+      appBarTheme: AppBarTheme(
+        elevation: 0,
+        centerTitle: false,
+        backgroundColor: const Color(0xFF001F3F), // Deep navy
+        foregroundColor: const Color(0xFFD4AF37), // Gold text
+        iconTheme: const IconThemeData(color: Color(0xFFD4AF37)), // Gold icons
+        titleTextStyle: GoogleFonts.inter(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFFD4AF37), // Gold title
+        ),
+      ),
+      // Input decoration styling
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+              color: Color(0xFFD4AF37), width: 2), // Gold border on focus
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      // Text selection and cursor styling for light mode
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: Color(0xFF001F3F), // Navy cursor
+        selectionColor: Color(0xFFD4AF37), // Gold selection highlight
+        selectionHandleColor: Color(0xFF001F3F), // Navy selection handles
+      ),
+      // Dialog styling
+      dialogTheme: DialogTheme(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        elevation: 8,
+      ),
+      // Bottom sheet styling
+      bottomSheetTheme: const BottomSheetThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+      ),
+      // ListTile styling for light theme
+      listTileTheme: ListTileThemeData(
+        iconColor: const Color(0xFF001F3F), // Navy blue icons
+        textColor: const Color(0xFF000000), // Black text
+        subtitleTextStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: Colors.grey.shade600,
+        ),
+      ),
+      // Divider styling
+      dividerTheme: DividerThemeData(
+        color: Colors.grey.shade300,
+        thickness: 1,
+        space: 1,
+      ),
+      // Radio button styling for light theme
+      radioTheme: RadioThemeData(
+        fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const Color(0xFF001F3F); // Navy when selected
+          }
+          return Colors.grey.shade400; // Gray when unselected
+        }),
+      ),
+    );
+  }
+
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      // Dark theme with Navy blue + Gold + Emerald green
+      colorScheme: const ColorScheme.dark(
+        primary: Color(0xFF001F3F), // Deep navy blue
+        secondary: Color(0xFFD4AF37), // Gold
+        tertiary: Color(0xFF50C878), // Emerald green
+        surface: Color(0xFF0A1628), // Very dark navy
+        background: Color(0xFF000814), // Near black with navy tint
+        onPrimary: Color(0xFFFFFFFF), // White text on navy
+        onSecondary: Color(0xFF000000), // Black text on gold
+        onTertiary: Color(0xFFFFFFFF), // White text on emerald
+        onSurface: Color(0xFFE8E6E3), // Light text on dark surface
+        onBackground: Color(0xFFE8E6E3), // Light text on dark background
+        error: Color(0xFFEF5350), // Brighter red for visibility
+        outline: Color(0xFF4A5568),
+      ),
+      // Premium typography
+      textTheme: GoogleFonts.interTextTheme(
+        ThemeData.dark().textTheme,
+      ).copyWith(
+        displayLarge: GoogleFonts.inter(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
+        ),
+        displayMedium: GoogleFonts.inter(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
+        ),
+        displaySmall: GoogleFonts.inter(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.25,
+        ),
+        headlineLarge: GoogleFonts.inter(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.25,
+        ),
+        headlineMedium: GoogleFonts.inter(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        titleLarge: GoogleFonts.inter(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+        titleMedium: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+        bodyLarge: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          height: 1.5,
+        ),
+        bodyMedium: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          height: 1.5,
+        ),
+      ),
+      // Card styling for dark mode
+      cardTheme: CardTheme(
+        elevation: 2,
+        shadowColor: const Color(0xFFD4AF37).withOpacity(0.1), // Gold shadow
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(
+            color: Color(0xFFD4AF37), // Gold border
+            width: 1.5,
+          ),
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        color: const Color(0xFF0A1628), // Dark navy surface
+      ),
+      // Elevated button styling
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          backgroundColor: const Color(0xFFD4AF37), // Gold background
+          foregroundColor: const Color(0xFF000000), // Black text for contrast
+        ),
+      ),
+      // Text button styling for dark mode
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          foregroundColor:
+              const Color(0xFFFFD700), // Bright gold for visibility
+        ),
+      ),
+      // Outlined button styling for dark mode
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          foregroundColor:
+              const Color(0xFFFFD700), // Bright gold for visibility
+          side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+        ),
+      ),
+      // Floating action button styling
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        elevation: 6,
+        backgroundColor: const Color(0xFFFFD700), // Bright gold for dark mode
+        foregroundColor: const Color(0xFF000000), // Black text/icon
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      // App bar styling
+      appBarTheme: AppBarTheme(
+        elevation: 0,
+        centerTitle: false,
+        backgroundColor: const Color(0xFF1A1A1A), // Dark background for app bar
+        foregroundColor: Colors.white,
+        iconTheme:
+            const IconThemeData(color: Color(0xFFFFD700)), // Bright gold icons
+        titleTextStyle: GoogleFonts.inter(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+      // Input decoration styling
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF0A1628), // Dark navy
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+              color: Color(0xFFD4AF37), width: 1), // Gold border
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 2),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        labelStyle:
+            const TextStyle(color: Color(0xFFD4AF37)), // Gold label text
+        hintStyle:
+            const TextStyle(color: Color(0xFF808080)), // Lighter hint text
+      ),
+      // Text selection and cursor styling for dark mode
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: Color(0xFFD4AF37), // Gold cursor
+        selectionColor: Color(0xFFD4AF37), // Gold selection highlight
+        selectionHandleColor: Color(0xFFD4AF37), // Gold selection handles
+      ),
+      // Dialog styling
+      dialogTheme: DialogTheme(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        elevation: 8,
+        backgroundColor: const Color(0xFF0A1628), // Dark navy
+        titleTextStyle: GoogleFonts.inter(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFFD4AF37), // Gold title
+        ),
+        contentTextStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: const Color(0xFFE8E6E3),
+        ),
+      ),
+      // Bottom sheet styling
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Color(0xFF0A1628), // Dark navy
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+      ),
+      // ListTile styling for dark theme
+      listTileTheme: ListTileThemeData(
+        iconColor: const Color(0xFFD4AF37), // Gold icons for visibility
+        textColor: const Color(0xFFE8E6E3), // Light text
+        subtitleTextStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: const Color(0xFFB0B0B0), // Lighter gray for subtitles
+        ),
+      ),
+      // Divider styling for dark theme
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFF2A3F5F), // Lighter navy for visibility
+        thickness: 1,
+        space: 1,
+      ),
+      // Radio button styling for dark theme
+      radioTheme: RadioThemeData(
+        fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const Color(0xFFD4AF37); // Gold when selected
+          }
+          return const Color(0xFF808080); // Gray when unselected
+        }),
       ),
     );
   }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/theme_provider.dart';
 import 'trash_screen.dart';
+import 'backup_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -35,12 +38,12 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('About'),
-            subtitle: const Text('Multi-Habit Tracker v1.0.0'),
+            subtitle: const Text('Multi-Habit Tracker v3.0.0'),
             onTap: () {
               showAboutDialog(
                 context: context,
                 applicationName: 'Multi-Habit Tracker',
-                applicationVersion: '1.0.0',
+                applicationVersion: '3.0.0',
                 applicationIcon: const Icon(Icons.track_changes, size: 48),
                 children: [
                   const Text(
@@ -55,14 +58,14 @@ class SettingsScreen extends StatelessWidget {
 
           // Appearance Section
           _buildSectionHeader(context, 'Appearance'),
-          ListTile(
-            leading: const Icon(Icons.palette_outlined),
-            title: const Text('Theme'),
-            subtitle: const Text('System default'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Theme settings coming soon!')),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return ListTile(
+                leading: const Icon(Icons.palette_outlined),
+                title: const Text('Theme'),
+                subtitle: Text(themeProvider.themeModeLabel),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _showThemeDialog(context, themeProvider),
               );
             },
           ),
@@ -73,11 +76,14 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.backup_outlined),
             title: const Text('Backup & Export'),
-            subtitle: const Text('Export your habit data'),
+            subtitle: const Text('Export and import your habit data'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Export feature coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BackupScreen(),
+                ),
               );
             },
           ),
@@ -124,15 +130,77 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildSectionHeader(BuildContext context, String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: isDark
+                  ? const Color(0xFFD4AF37) // Gold for dark mode
+                  : Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
             ),
       ),
+    );
+  }
+
+  void _showThemeDialog(BuildContext context, ThemeProvider themeProvider) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Choose Theme'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<AppThemeMode>(
+                title: const Text('Light'),
+                subtitle: const Text('Always use light theme'),
+                value: AppThemeMode.light,
+                groupValue: themeProvider.themeMode,
+                onChanged: (value) {
+                  if (value != null) {
+                    themeProvider.setThemeMode(value);
+                    Navigator.pop(dialogContext);
+                  }
+                },
+              ),
+              RadioListTile<AppThemeMode>(
+                title: const Text('Dark'),
+                subtitle: const Text('Always use dark theme'),
+                value: AppThemeMode.dark,
+                groupValue: themeProvider.themeMode,
+                onChanged: (value) {
+                  if (value != null) {
+                    themeProvider.setThemeMode(value);
+                    Navigator.pop(dialogContext);
+                  }
+                },
+              ),
+              RadioListTile<AppThemeMode>(
+                title: const Text('System default'),
+                subtitle: const Text('Follow system theme'),
+                value: AppThemeMode.system,
+                groupValue: themeProvider.themeMode,
+                onChanged: (value) {
+                  if (value != null) {
+                    themeProvider.setThemeMode(value);
+                    Navigator.pop(dialogContext);
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

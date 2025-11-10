@@ -177,7 +177,7 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
                         Text(
                           'Today',
                           style: TextStyle(
-                            color: Colors.blue.shade600,
+                            color: Theme.of(context).colorScheme.secondary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -185,7 +185,10 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
                         Text(
                           'Future date',
                           style: TextStyle(
-                            color: Colors.grey.shade600,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(0xFFB0B0B0)
+                                    : Colors.grey.shade600,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
@@ -212,27 +215,27 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
                   Expanded(
                     child: _buildStatusButton(
                       status: HabitStatus.complete,
-                      icon: '✅',
+                      icon: Icons.check_rounded,
                       label: 'Complete',
-                      color: Colors.green,
+                      color: const Color(0xFF50C878), // Emerald green
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildStatusButton(
                       status: HabitStatus.missed,
-                      icon: '❌',
+                      icon: Icons.close_rounded,
                       label: 'Missed',
-                      color: Colors.red.shade300,
+                      color: const Color(0xFFEF5350), // Brighter red
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildStatusButton(
                       status: HabitStatus.skipped,
-                      icon: '➖',
+                      icon: Icons.remove_rounded,
                       label: 'Skipped',
-                      color: Colors.amber.shade300,
+                      color: const Color(0xFFD4AF37), // Gold
                     ),
                   ),
                 ],
@@ -312,11 +315,15 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
 
   Widget _buildStatusButton({
     required HabitStatus status,
-    required String icon,
+    required IconData icon,
     required String label,
     required Color color,
   }) {
     final isSelected = _selectedStatus == status;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark
+        ? (isSelected ? color : const Color(0xFFD4AF37).withOpacity(0.5))
+        : (isSelected ? color : Colors.grey.shade300);
 
     return Semantics(
       label: 'Mark as $label',
@@ -333,18 +340,23 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
+            color: isSelected
+                ? color.withOpacity(0.2)
+                : (isDark ? const Color(0xFF0A1628) : Colors.transparent),
             border: Border.all(
-              color: isSelected ? color : Colors.grey.shade300,
-              width: isSelected ? 2 : 1,
+              color: borderColor,
+              width: isSelected ? 2 : 1.5,
             ),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
             children: [
-              Text(
+              Icon(
                 icon,
-                style: const TextStyle(fontSize: 28),
+                size: 32,
+                color: isSelected
+                    ? color
+                    : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
               ),
               const SizedBox(height: 4),
               Text(
@@ -352,7 +364,9 @@ class _DayDetailBottomSheetState extends State<DayDetailBottomSheet> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? color : Colors.grey.shade700,
+                  color: isSelected
+                      ? color
+                      : (isDark ? Colors.grey.shade400 : Colors.grey.shade700),
                 ),
               ),
             ],
