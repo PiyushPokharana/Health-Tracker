@@ -38,12 +38,12 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('About'),
-            subtitle: const Text('Multi-Habit Tracker v3.0.0'),
+            subtitle: const Text('Multi-Habit Tracker v3.0.1'),
             onTap: () {
               showAboutDialog(
                 context: context,
                 applicationName: 'Multi-Habit Tracker',
-                applicationVersion: '3.0.0',
+                applicationVersion: '3.0.1',
                 applicationIcon: const Icon(Icons.track_changes, size: 48),
                 children: [
                   const Text(
