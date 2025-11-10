@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'providers/habit_provider.dart';
 import 'screens/home_screen.dart';
 
@@ -19,9 +20,139 @@ class MultiHabitTrackerApp extends StatelessWidget {
       create: (_) => HabitProvider(),
       child: MaterialApp(
         title: 'Multi-Habit Tracker',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
           useMaterial3: true,
+          // Premium color palette - Dark charcoal with amber/gold accents
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFFF59E0B), // Amber-500
+            brightness: Brightness.light,
+            primary: const Color(0xFF1F2937), // Gray-800 - sophisticated dark
+            secondary: const Color(0xFFF59E0B), // Amber-500 - premium gold
+            tertiary: const Color(0xFF10B981), // Emerald-500 for success
+            surface: const Color(0xFFFAFAFA), // Off-white
+            background: const Color(0xFFF5F5F5), // Light gray
+          ),
+          // Premium typography using Inter font family
+          textTheme: GoogleFonts.interTextTheme(
+            ThemeData.light().textTheme,
+          ).copyWith(
+            displayLarge: GoogleFonts.inter(
+              fontSize: 32,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+            ),
+            displayMedium: GoogleFonts.inter(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+            ),
+            displaySmall: GoogleFonts.inter(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.25,
+            ),
+            headlineLarge: GoogleFonts.inter(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.25,
+            ),
+            headlineMedium: GoogleFonts.inter(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+            titleLarge: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+            titleMedium: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            bodyLarge: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+            ),
+            bodyMedium: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+            ),
+          ),
+          // Premium card styling with subtle shadows
+          cardTheme: CardTheme(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.grey.shade200),
+            ),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          ),
+          // Elevated button styling
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              textStyle: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          // Floating action button styling
+          floatingActionButtonTheme: FloatingActionButtonThemeData(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          // App bar styling
+          appBarTheme: AppBarTheme(
+            elevation: 0,
+            centerTitle: false,
+            backgroundColor: const Color(0xFF1F2937),
+            foregroundColor: Colors.white,
+            titleTextStyle: GoogleFonts.inter(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          // Input decoration styling
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          ),
+          // Dialog styling
+          dialogTheme: DialogTheme(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            elevation: 8,
+          ),
+          // Bottom sheet styling
+          bottomSheetTheme: const BottomSheetThemeData(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+          ),
         ),
         home: const HomeScreen(),
       ),

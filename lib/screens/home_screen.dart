@@ -14,18 +14,32 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  // Only keep local UI state (selection mode)
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   bool _isSelectionMode = false;
   final Set<int> _selectedHabitIds = {};
+  late AnimationController _fabAnimationController;
+  late Animation<double> _fabScaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Load habits using Provider - no setState needed!
+    _fabAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _fabScaleAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeInOut),
+    );
+    
     Future.microtask(
       () => context.read<HabitProvider>().loadHabits(),
     );
+  }
+
+  @override
+  void dispose() {
+    _fabAnimationController.dispose();
+    super.dispose();
   }
 
   Future<void> _showAddHabitDialog() async {
@@ -34,13 +48,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add New Habit'),
+        title: Text(
+          'Add New Habit',
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
         content: TextField(
           controller: nameController,
           autofocus: true,
           decoration: const InputDecoration(
             labelText: 'Habit Name',
             hintText: 'e.g., Exercise, Read, Meditate',
+            prefixIcon: Icon(Icons.track_changes),
           ),
           textCapitalization: TextCapitalization.sentences,
         ),
@@ -49,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          FilledButton(
             onPressed: () {
               if (nameController.text.trim().isNotEmpty) {
                 Navigator.pop(context, true);
@@ -78,6 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? 'Habit added successfully!'
                   : provider.errorMessage ?? 'Error adding habit',
             ),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -92,6 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _selectedHabitIds.remove(habitId);
         if (_selectedHabitIds.isEmpty) {
           _isSelectionMode = false;
+          _fabAnimationController.reverse(); // Animate FAB back in
         }
       } else {
         _selectedHabitIds.add(habitId);
@@ -104,6 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _isSelectionMode = true;
       _selectedHabitIds.clear();
       _selectedHabitIds.add(habitId);
+      _fabAnimationController.forward(); // Animate FAB out
     });
   }
 
@@ -111,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isSelectionMode = false;
       _selectedHabitIds.clear();
+      _fabAnimationController.reverse(); // Animate FAB back in
     });
   }
 
@@ -236,6 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isLoading = provider.isLoading;
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: _isSelectionMode ? _buildSelectionAppBar() : _buildNormalAppBar(),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -244,12 +268,18 @@ class _HomeScreenState extends State<HomeScreen> {
               : _buildHabitList(habits),
       floatingActionButton: _isSelectionMode
           ? null
-          : Semantics(
-              label: 'Add new habit',
-              button: true,
-              child: FloatingActionButton(
-                onPressed: _showAddHabitDialog,
-                child: const Icon(Icons.add),
+          : ScaleTransition(
+              scale: _fabScaleAnimation,
+              child: Semantics(
+                label: 'Add new habit',
+                button: true,
+                child: FloatingActionButton.extended(
+                  onPressed: _showAddHabitDialog,
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  foregroundColor: Colors.white,
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Add Habit'),
+                ),
               ),
             ),
     );
@@ -257,13 +287,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   PreferredSizeWidget _buildNormalAppBar() {
     return AppBar(
-      title: const Text('My Habits'),
+      title: Text(
+        'Upgrade',
+        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+          color: Colors.white,
+        ),
+      ),
       actions: [
         Semantics(
           label: 'View all notes',
           button: true,
           child: IconButton(
-            icon: const Icon(Icons.notes),
+            icon: const Icon(Icons.notes_rounded),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -271,7 +306,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (context) => const NotesListScreen(),
                 ),
               );
-              // Provider automatically refreshes - no manual reload needed!
             },
             tooltip: 'View All Notes',
           ),
@@ -280,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
           label: 'Open settings',
           button: true,
           child: IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_rounded),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -288,7 +322,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (context) => const SettingsScreen(),
                 ),
               );
-              // Reload habits in case any were restored from trash
               if (mounted) {
                 context.read<HabitProvider>().loadHabits();
               }
@@ -333,24 +366,46 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.track_changes,
-            size: 80,
-            color: Colors.grey[400],
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+                ],
+              ),
+            ),
+            child: Icon(
+              Icons.track_changes_rounded,
+              size: 80,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(
             'No habits yet',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.grey[600],
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Tap the + button to create your first habit',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[500],
+            'Start building better habits today',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Colors.grey[600],
                 ),
+          ),
+          const SizedBox(height: 32),
+          FilledButton.icon(
+            onPressed: _showAddHabitDialog,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Create Your First Habit'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            ),
           ),
         ],
       ),
@@ -359,6 +414,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHabitList(List<Habit> habits) {
     return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: habits.length,
       itemBuilder: (context, index) {
         final habit = habits[index];
@@ -372,77 +428,146 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Material(
               type: MaterialType.transparency,
               child: Card(
-                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: ListTile(
-                  leading: _isSelectionMode
-                      ? Semantics(
-                          label: isSelected
-                              ? 'Selected, tap to deselect'
-                              : 'Not selected, tap to select',
-                          child: Checkbox(
-                            value: isSelected,
-                            onChanged: (_) => _toggleSelection(habit.id!),
-                          ),
-                        )
-                      : const Icon(Icons.track_changes),
-                  title: Text(habit.name),
-                  subtitle: FutureBuilder<int>(
-                    // Use Provider for streak calculation
-                    future: context
-                        .read<HabitProvider>()
-                        .getCurrentStreak(habit.id!),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        final streak = snapshot.data!;
-                        return Text(
-                          streak > 0
-                              ? '🔥 $streak day${streak > 1 ? 's' : ''} streak'
-                              : 'No streak yet',
-                          style: TextStyle(
-                            color: streak > 0 ? Colors.orange : Colors.grey,
-                          ),
-                        );
-                      }
-                      return const Text('Loading...');
-                    },
+                elevation: isSelected ? 2 : 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: isSelected 
+                        ? Theme.of(context).colorScheme.secondary
+                        : Colors.grey.shade200,
+                    width: isSelected ? 2 : 1,
                   ),
+                ),
+                child: InkWell(
                   onTap: () async {
                     if (_isSelectionMode) {
                       _toggleSelection(habit.id!);
                     } else {
-                      // Navigate to habit detail screen with page transition
+                      HapticFeedback.lightImpact();
                       await Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  HabitDetailScreen(habit: habit),
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              HabitDetailScreen(habit: habit),
                           transitionsBuilder:
                               (context, animation, secondaryAnimation, child) {
                             const begin = Offset(1.0, 0.0);
                             const end = Offset.zero;
-                            const curve = Curves.easeInOut;
+                            const curve = Curves.easeOutCubic;
                             var tween = Tween(begin: begin, end: end)
                                 .chain(CurveTween(curve: curve));
                             var offsetAnimation = animation.drive(tween);
                             return SlideTransition(
                               position: offsetAnimation,
-                              child: child,
+                              child: FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              ),
                             );
                           },
-                          transitionDuration: const Duration(milliseconds: 300),
+                          transitionDuration: const Duration(milliseconds: 350),
                         ),
                       );
-                      // Provider will automatically refresh if needed
                     }
                   },
                   onLongPress: () {
                     if (!_isSelectionMode) {
-                      HapticFeedback
-                          .mediumImpact(); // Haptic for entering selection mode
+                      HapticFeedback.mediumImpact();
                       _enterSelectionMode(habit.id!);
                     }
                   },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        if (_isSelectionMode)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: Checkbox(
+                              value: isSelected,
+                              onChanged: (_) => _toggleSelection(habit.id!),
+                              shape: const CircleBorder(),
+                            ),
+                          )
+                        else
+                          Container(
+                            width: 48,
+                            height: 48,
+                            margin: const EdgeInsets.only(right: 16),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Theme.of(context).colorScheme.secondary,
+                                  Theme.of(context).colorScheme.secondary.withOpacity(0.7),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.track_changes_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                habit.name,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                              const SizedBox(height: 4),
+                              FutureBuilder<int>(
+                                future: context
+                                    .read<HabitProvider>()
+                                    .getCurrentStreak(habit.id!),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    final streak = snapshot.data!;
+                                    return Row(
+                                      children: [
+                                        Text(
+                                          streak > 0 ? '🔥' : '⚪',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          streak > 0
+                                              ? '$streak day${streak > 1 ? 's' : ''} streak'
+                                              : 'No streak yet',
+                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            color: streak > 0 
+                                                ? Theme.of(context).colorScheme.secondary
+                                                : Colors.grey[600],
+                                            fontWeight: streak > 0 ? FontWeight.w500 : FontWeight.w400,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                  return Text(
+                                    'Loading...',
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (!_isSelectionMode)
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: Colors.grey[400],
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
