@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:daily_success_tracker_1/screens/home_screen.dart';
-import 'package:daily_success_tracker_1/providers/habit_provider.dart';
+import 'package:hta/screens/home_screen.dart';
+import 'package:hta/providers/habit_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';

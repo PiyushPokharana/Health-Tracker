@@ -619,7 +619,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen>
                                                   'Best Streak',
                                                   Theme.of(context)
                                                       .colorScheme
-                                                      .tertiary,
+                                                      .secondary,
                                                 ),
                                               ),
                                             ],
@@ -767,19 +767,23 @@ class _HabitDetailScreenState extends State<HabitDetailScreen>
   Widget _buildStatCard(
       IconData icon, String value, String label, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Use brighter colors in dark mode
+    final displayColor =
+        isDark ? Color.alphaBlend(Colors.white.withOpacity(0.3), color) : color;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: displayColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: displayColor.withOpacity(0.3)),
       ),
       child: Column(
         children: [
           Icon(
             icon,
             size: 32,
-            color: color,
+            color: displayColor,
           ),
           const SizedBox(height: 8),
           Text(
@@ -787,7 +791,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen>
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: color,
+              color: displayColor,
             ),
           ),
           const SizedBox(height: 4),

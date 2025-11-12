@@ -24,7 +24,7 @@ class MultiHabitTrackerApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
-            title: 'Multi-Habit Tracker',
+            title: 'HTA',
             debugShowCheckedModeBanner: false,
             themeMode: themeProvider.materialThemeMode,
             theme: _buildLightTheme(),

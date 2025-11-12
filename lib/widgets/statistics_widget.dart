@@ -93,7 +93,8 @@ class StatisticsWidget extends StatelessWidget {
                     title: 'Best Streak',
                     value: '${stats['maxStreak']} days',
                     subtitle: 'Your personal record',
-                    color: const Color(0xFF001F3F), // Navy blue
+                    color:
+                        const Color(0xFFFFD700), // Bright Gold for visibility
                   ),
                   const SizedBox(height: 24),
 
@@ -141,7 +142,8 @@ class StatisticsWidget extends StatelessWidget {
                             icon: Icons.calendar_today_rounded,
                             label: 'Total Days Tracked',
                             count: stats['totalRecords'],
-                            color: const Color(0xFF001F3F), // Navy blue
+                            color: const Color.fromARGB(
+                                255, 0, 165, 174), // Navy blue
                             bold: true,
                           ),
                         ],

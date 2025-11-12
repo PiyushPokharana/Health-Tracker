@@ -154,6 +154,7 @@ class HabitManager {
   /// - Complete: continues streak
   /// - Missed: breaks streak
   /// - Skipped: ignored (doesn't break or continue)
+  /// - Days must be consecutive (gaps break the streak unless marked as skipped)
   Future<int> getCurrentStreak(int habitId) async {
     final records = await getRecordsForHabit(habitId);
     if (records.isEmpty) return 0;
@@ -162,27 +163,67 @@ class HabitManager {
     records.sort((a, b) => b.date.compareTo(a.date));
 
     int streak = 0;
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final today = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(today);
+    DateTime? expectedDate;
 
     for (var record in records) {
-      if (record.date.compareTo(today) > 0) {
-        // Skip future dates
+      final recordDate = DateTime.parse(record.date);
+
+      // Skip future dates
+      if (record.date.compareTo(todayStr) > 0) {
         continue;
       }
 
+      // Initialize expected date on first iteration
+      if (expectedDate == null) {
+        expectedDate = today;
+      }
+
+      // Check if this record is on the expected date or earlier
+      // If there's a gap, check if it's filled with "skipped" or if it breaks the streak
+      while (expectedDate!.isAfter(recordDate) &&
+          DateFormat('yyyy-MM-dd').format(expectedDate) != record.date) {
+        final expectedDateStr = DateFormat('yyyy-MM-dd').format(expectedDate);
+
+        // Look for a record on the expected date
+        final expectedRecord = records.firstWhere(
+          (r) => r.date == expectedDateStr,
+          orElse: () => HabitRecord(
+            habitId: habitId,
+            date: expectedDateStr,
+            status: HabitStatus.missed, // Treat missing days as missed
+          ),
+        );
+
+        // If the expected date was missed (or has no record), break the streak
+        if (expectedRecord.status == HabitStatus.missed) {
+          return streak;
+        }
+        // If skipped, move to previous day without breaking streak
+
+        expectedDate = expectedDate.subtract(const Duration(days: 1));
+      }
+
+      // Now check the current record
       if (record.status == HabitStatus.complete) {
         streak++;
+        // Move to the previous day
+        expectedDate = recordDate.subtract(const Duration(days: 1));
       } else if (record.status == HabitStatus.missed) {
-        // Missed breaks the streak
+        // Missed explicitly breaks the streak
         break;
+      } else if (record.status == HabitStatus.skipped) {
+        // Skipped: move to previous day without incrementing streak
+        expectedDate = recordDate.subtract(const Duration(days: 1));
       }
-      // Skipped is ignored, continue checking
     }
 
     return streak;
   }
 
   /// Calculate maximum streak ever achieved for a habit
+  /// Counts consecutive complete days, where skipped days don't break the streak
   Future<int> getMaxStreak(int habitId) async {
     final records = await getRecordsForHabit(habitId);
     if (records.isEmpty) return 0;
@@ -192,18 +233,58 @@ class HabitManager {
 
     int maxStreak = 0;
     int currentStreak = 0;
+    DateTime? lastDate;
 
     for (var record in records) {
+      final recordDate = DateTime.parse(record.date);
+
+      if (lastDate != null) {
+        final daysDiff = recordDate.difference(lastDate).inDays;
+
+        // If there's a gap of more than 1 day, check if we need to break the streak
+        if (daysDiff > 1) {
+          // Check if all days in the gap are marked as skipped
+          bool hasGap = false;
+          for (int i = 1; i < daysDiff; i++) {
+            final gapDate = lastDate.add(Duration(days: i));
+            final gapDateStr = DateFormat('yyyy-MM-dd').format(gapDate);
+            final gapRecord = records.firstWhere(
+              (r) => r.date == gapDateStr,
+              orElse: () => HabitRecord(
+                habitId: habitId,
+                date: gapDateStr,
+                status: HabitStatus.missed,
+              ),
+            );
+
+            // If any day in the gap is not skipped, break the streak
+            if (gapRecord.status != HabitStatus.skipped) {
+              hasGap = true;
+              break;
+            }
+          }
+
+          if (hasGap) {
+            // Reset streak due to gap
+            currentStreak = 0;
+          }
+        }
+      }
+
       if (record.status == HabitStatus.complete) {
         currentStreak++;
         if (currentStreak > maxStreak) {
           maxStreak = currentStreak;
         }
+        lastDate = recordDate;
       } else if (record.status == HabitStatus.missed) {
-        // Missed breaks the streak
+        // Missed explicitly breaks the streak
         currentStreak = 0;
+        lastDate = recordDate;
+      } else if (record.status == HabitStatus.skipped) {
+        // Skipped: don't break streak, but don't increment either
+        lastDate = recordDate;
       }
-      // Skipped is ignored
     }
 
     return maxStreak;
