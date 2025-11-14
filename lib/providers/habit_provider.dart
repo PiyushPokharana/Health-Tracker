@@ -15,6 +15,8 @@ class HabitProvider extends ChangeNotifier {
   List<Habit> _deletedHabits = [];
   bool _isLoading = false;
   String? _errorMessage;
+  final Map<int, int> _currentStreakCache = {};
+  final Map<int, Map<String, dynamic>> _statsCache = {};
 
   // Getters
   List<Habit> get habits => _habits;
@@ -22,6 +24,7 @@ class HabitProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasHabits => _habits.isNotEmpty;
+  int currentStreakFor(int habitId) => _currentStreakCache[habitId] ?? 0;
 
   /// Load all habits from database
   Future<void> loadHabits() async {
@@ -30,6 +33,18 @@ class HabitProvider extends ChangeNotifier {
 
     try {
       _habits = await _habitManager.loadHabits();
+      final streakEntries = await Future.wait(
+        _habits
+            .where((habit) => habit.id != null)
+            .map((habit) async => MapEntry(
+                  habit.id!,
+                  await _habitManager.getCurrentStreak(habit.id!),
+                )),
+      );
+      _currentStreakCache
+        ..clear()
+        ..addEntries(streakEntries);
+      _statsCache.clear();
       notifyListeners();
     } catch (e) {
       _setError('Failed to load habits: $e');
@@ -118,6 +133,8 @@ class HabitProvider extends ChangeNotifier {
 
     try {
       await _habitManager.permanentlyDeleteHabit(habitId);
+      _currentStreakCache.remove(habitId);
+      _statsCache.remove(habitId);
       await loadDeletedHabits(); // Reload deleted habits
       return true;
     } catch (e) {
@@ -139,7 +156,12 @@ class HabitProvider extends ChangeNotifier {
   /// Get current streak for a habit
   Future<int> getCurrentStreak(int habitId) async {
     try {
-      return await _habitManager.getCurrentStreak(habitId);
+      if (_currentStreakCache.containsKey(habitId)) {
+        return _currentStreakCache[habitId]!;
+      }
+      final streak = await _habitManager.getCurrentStreak(habitId);
+      _currentStreakCache[habitId] = streak;
+      return streak;
     } catch (e) {
       _setError('Failed to calculate streak: $e');
       return 0;
@@ -158,6 +180,9 @@ class HabitProvider extends ChangeNotifier {
     try {
       await _habitManager.addOrUpdateRecord(habitId, date, status, note: note);
       // Don't reload all habits, just notify that data changed
+      _statsCache.remove(habitId);
+      _currentStreakCache[habitId] =
+          await _habitManager.getCurrentStreak(habitId);
       notifyListeners();
       return true;
     } catch (e) {
@@ -171,7 +196,12 @@ class HabitProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      await _habitManager.deleteRecord(recordId);
+      final removedRecord = await _habitManager.deleteRecord(recordId);
+      if (removedRecord != null) {
+        _statsCache.remove(removedRecord.habitId);
+        _currentStreakCache[removedRecord.habitId] =
+            await _habitManager.getCurrentStreak(removedRecord.habitId);
+      }
       notifyListeners();
       return true;
     } catch (e) {
@@ -181,9 +211,15 @@ class HabitProvider extends ChangeNotifier {
   }
 
   /// Get statistics for a habit
-  Future<Map<String, dynamic>> getHabitStatistics(int habitId) async {
+  Future<Map<String, dynamic>> getHabitStatistics(int habitId,
+      {bool forceRefresh = false}) async {
+    if (!forceRefresh && _statsCache.containsKey(habitId)) {
+      return Map<String, dynamic>.from(_statsCache[habitId]!);
+    }
     try {
-      return await _habitManager.getHabitStatistics(habitId);
+      final stats = await _habitManager.getHabitStatistics(habitId);
+      _statsCache[habitId] = Map<String, dynamic>.from(stats);
+      return stats;
     } catch (e) {
       _setError('Failed to calculate statistics: $e');
       return {};

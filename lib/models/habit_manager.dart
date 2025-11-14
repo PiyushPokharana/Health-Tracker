@@ -120,12 +120,13 @@ class HabitManager {
   }
 
   /// Delete a habit record
-  Future<void> deleteRecord(int recordId) async {
+  Future<HabitRecord?> deleteRecord(int recordId) async {
     final record = await _dbHelper.getHabitRecord(recordId);
     if (record != null) {
       await _dbHelper.deleteHabitRecord(recordId);
       _habitRecordsCache.remove(record.habitId);
     }
+    return record;
   }
 
   /// Get all records for a specific habit

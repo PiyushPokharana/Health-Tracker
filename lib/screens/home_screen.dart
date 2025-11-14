@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For HapticFeedback
 import 'package:provider/provider.dart';
@@ -32,9 +33,14 @@ class _HomeScreenState extends State<HomeScreen>
       CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeInOut),
     );
 
-    Future.microtask(
-      () => context.read<HabitProvider>().loadHabits(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await context.read<HabitProvider>().loadHabits();
+      } catch (error, stackTrace) {
+        debugPrint('Failed to load habits: $error');
+        debugPrint('$stackTrace');
+      }
+    });
   }
 
   @override
@@ -267,7 +273,7 @@ class _HomeScreenState extends State<HomeScreen>
           ? const Center(child: CircularProgressIndicator())
           : habits.isEmpty
               ? _buildEmptyState()
-              : _buildHabitList(habits),
+              : _buildHabitList(habits, provider),
       floatingActionButton: _isSelectionMode
           ? null
           : ScaleTransition(
@@ -419,13 +425,14 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildHabitList(List<Habit> habits) {
+  Widget _buildHabitList(List<Habit> habits, HabitProvider provider) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: habits.length,
       itemBuilder: (context, index) {
         final habit = habits[index];
         final isSelected = _selectedHabitIds.contains(habit.id);
+        final streak = provider.currentStreakFor(habit.id!);
 
         return Semantics(
           label: 'Habit: ${habit.name}',
@@ -532,59 +539,35 @@ class _HomeScreenState extends State<HomeScreen>
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
                               const SizedBox(height: 4),
-                              FutureBuilder<int>(
-                                future: context
-                                    .read<HabitProvider>()
-                                    .getCurrentStreak(habit.id!),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    final streak = snapshot.data!;
-                                    return Row(
-                                      children: [
-                                        Text(
-                                          streak > 0 ? '🔥' : '⚪',
-                                          style: const TextStyle(fontSize: 14),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          streak > 0
-                                              ? '$streak day${streak > 1 ? 's' : ''} streak'
-                                              : 'No streak yet',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.copyWith(
-                                                color: streak > 0
-                                                    ? Theme.of(context)
-                                                        .colorScheme
-                                                        .secondary
-                                                    : (Theme.of(context)
-                                                                .brightness ==
-                                                            Brightness.dark
-                                                        ? const Color(
-                                                            0xFFB0B0B0)
-                                                        : Colors.grey[600]),
-                                                fontWeight: streak > 0
-                                                    ? FontWeight.w500
-                                                    : FontWeight.w400,
-                                              ),
-                                        ),
-                                      ],
-                                    );
-                                  }
-                                  return Text(
-                                    'Loading...',
+                              Row(
+                                children: [
+                                  Text(
+                                    streak > 0 ? '🔥' : '⚪',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    streak > 0
+                                        ? '$streak day${streak > 1 ? 's' : ''} streak'
+                                        : 'No streak yet',
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
                                         ?.copyWith(
-                                          color: Theme.of(context).brightness ==
-                                                  Brightness.dark
-                                              ? const Color(0xFFB0B0B0)
-                                              : Colors.grey[600],
+                                          color: streak > 0
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary
+                                              : (Theme.of(context).brightness ==
+                                                      Brightness.dark
+                                                  ? const Color(0xFFB0B0B0)
+                                                  : Colors.grey[600]),
+                                          fontWeight: streak > 0
+                                              ? FontWeight.w500
+                                              : FontWeight.w400,
                                         ),
-                                  );
-                                },
+                                  ),
+                                ],
                               ),
                             ],
                           ),

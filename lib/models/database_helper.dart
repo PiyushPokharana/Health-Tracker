@@ -85,28 +85,39 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX idx_habitId ON HabitRecords(habitId)');
       await db.execute('CREATE INDEX idx_date ON HabitRecords(date)');
 
-      // Migrate old data: Create a default "Daily Success" habit
-      final habitId = await db.insert('Habits', {
-        'name': 'Daily Success',
-        'createdAt': DateTime.now().toIso8601String(),
-        'isDeleted': 0,
-        'deletedAt': null,
-      });
-
-      // Migrate all old records to the new habit
-      final oldRecords = await db.query('DailyRecords');
-      for (var record in oldRecords) {
-        await db.insert('HabitRecords', {
-          'habitId': habitId,
-          'date': record['date'],
-          'status': (record['isSuccess'] == 1) ? 'complete' : 'missed',
-          'note': null,
+      final hasLegacyTable = await _tableExists(db, 'DailyRecords');
+      if (hasLegacyTable) {
+        // Migrate old data: Create a default "Daily Success" habit
+        final habitId = await db.insert('Habits', {
+          'name': 'Daily Success',
+          'createdAt': DateTime.now().toIso8601String(),
+          'isDeleted': 0,
+          'deletedAt': null,
         });
-      }
 
-      // Drop old table
-      await db.execute('DROP TABLE IF EXISTS DailyRecords');
+        // Migrate all old records to the new habit
+        final oldRecords = await db.query('DailyRecords');
+        for (var record in oldRecords) {
+          await db.insert('HabitRecords', {
+            'habitId': habitId,
+            'date': record['date'],
+            'status': (record['isSuccess'] == 1) ? 'complete' : 'missed',
+            'note': null,
+          });
+        }
+
+        // Drop old table
+        await db.execute('DROP TABLE IF EXISTS DailyRecords');
+      }
     }
+  }
+
+  Future<bool> _tableExists(Database db, String tableName) async {
+    final result = await db.rawQuery(
+      'SELECT name FROM sqlite_master WHERE type = ? AND name = ?',
+      ['table', tableName],
+    );
+    return result.isNotEmpty;
   }
 
   // ==================== HABIT CRUD OPERATIONS ====================

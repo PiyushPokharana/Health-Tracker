@@ -1,13 +1,35 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'providers/habit_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MultiHabitTrackerApp());
+void main() {
+  runZonedGuarded(
+    () {
+      WidgetsFlutterBinding.ensureInitialized();
+
+      if (kDebugMode) {
+        FlutterError.onError = (details) {
+          FlutterError.presentError(details);
+          Zone.current.handleUncaughtError(
+            details.exception,
+            details.stack ?? StackTrace.empty,
+          );
+        };
+      }
+
+      runApp(const MultiHabitTrackerApp());
+    },
+    (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('Uncaught app error: $error');
+        debugPrint('$stackTrace');
+      }
+    },
+  );
 }
 
 class MultiHabitTrackerApp extends StatelessWidget {
@@ -47,58 +69,53 @@ class MultiHabitTrackerApp extends StatelessWidget {
         secondary: const Color(0xFFD4AF37), // Gold - luxury accent
         tertiary: const Color(0xFF50C878), // Emerald green - success and growth
         surface: const Color(0xFFFFFFFF), // Pure white
-        background:
-            const Color(0xFFE5E4E2), // Platinum silver - elegant background
         onPrimary: const Color(0xFFFFFFFF), // White text on navy
         onSecondary: const Color(0xFF000000), // Black text on gold
         onTertiary: const Color(0xFFFFFFFF), // White text on emerald
         onSurface: const Color(0xFF000000), // Black text on white
-        onBackground: const Color(0xFF000000), // Black text on platinum
         error: const Color(0xFFB00020), // Error red
         outline: const Color(0xFF9CA3AF), // Subtle gray outline
       ),
-      // Premium typography using Inter font family
-      textTheme: GoogleFonts.interTextTheme(
-        ThemeData.light().textTheme,
-      ).copyWith(
-        displayLarge: GoogleFonts.inter(
+      // Use system fonts to reduce app size
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.5,
         ),
-        displayMedium: GoogleFonts.inter(
+        displayMedium: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.5,
         ),
-        displaySmall: GoogleFonts.inter(
+        displaySmall: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.w600,
           letterSpacing: -0.25,
         ),
-        headlineLarge: GoogleFonts.inter(
+        headlineLarge: TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           letterSpacing: -0.25,
         ),
-        headlineMedium: GoogleFonts.inter(
+        headlineMedium: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
-        titleLarge: GoogleFonts.inter(
+        titleLarge: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
         ),
-        titleMedium: GoogleFonts.inter(
+        titleMedium: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
-        bodyLarge: GoogleFonts.inter(
+        bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           height: 1.5,
         ),
-        bodyMedium: GoogleFonts.inter(
+        bodyMedium: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           height: 1.5,
@@ -128,7 +145,7 @@ class MultiHabitTrackerApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -143,7 +160,7 @@ class MultiHabitTrackerApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -157,7 +174,7 @@ class MultiHabitTrackerApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -181,10 +198,10 @@ class MultiHabitTrackerApp extends StatelessWidget {
         backgroundColor: const Color(0xFF001F3F), // Deep navy
         foregroundColor: const Color(0xFFD4AF37), // Gold text
         iconTheme: const IconThemeData(color: Color(0xFFD4AF37)), // Gold icons
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: const Color(0xFFD4AF37), // Gold title
+          color: Color(0xFFD4AF37), // Gold title
         ),
       ),
       // Input decoration styling
@@ -230,9 +247,9 @@ class MultiHabitTrackerApp extends StatelessWidget {
       listTileTheme: ListTileThemeData(
         iconColor: const Color(0xFF001F3F), // Navy blue icons
         textColor: const Color(0xFF000000), // Black text
-        subtitleTextStyle: GoogleFonts.inter(
+        subtitleTextStyle: const TextStyle(
           fontSize: 14,
-          color: Colors.grey.shade600,
+          color: Colors.grey,
         ),
       ),
       // Divider styling
@@ -272,48 +289,46 @@ class MultiHabitTrackerApp extends StatelessWidget {
         error: Color(0xFFEF5350), // Brighter red for visibility
         outline: Color(0xFF4A5568),
       ),
-      // Premium typography
-      textTheme: GoogleFonts.interTextTheme(
-        ThemeData.dark().textTheme,
-      ).copyWith(
-        displayLarge: GoogleFonts.inter(
+      // Use system fonts to reduce app size
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.5,
         ),
-        displayMedium: GoogleFonts.inter(
+        displayMedium: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.5,
         ),
-        displaySmall: GoogleFonts.inter(
+        displaySmall: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.w600,
           letterSpacing: -0.25,
         ),
-        headlineLarge: GoogleFonts.inter(
+        headlineLarge: TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           letterSpacing: -0.25,
         ),
-        headlineMedium: GoogleFonts.inter(
+        headlineMedium: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
-        titleLarge: GoogleFonts.inter(
+        titleLarge: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
         ),
-        titleMedium: GoogleFonts.inter(
+        titleMedium: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
-        bodyLarge: GoogleFonts.inter(
+        bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           height: 1.5,
         ),
-        bodyMedium: GoogleFonts.inter(
+        bodyMedium: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           height: 1.5,
@@ -341,7 +356,7 @@ class MultiHabitTrackerApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -356,7 +371,7 @@ class MultiHabitTrackerApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -371,7 +386,7 @@ class MultiHabitTrackerApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -397,7 +412,7 @@ class MultiHabitTrackerApp extends StatelessWidget {
         foregroundColor: Colors.white,
         iconTheme:
             const IconThemeData(color: Color(0xFFFFD700)), // Bright gold icons
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: Colors.white,
@@ -440,14 +455,14 @@ class MultiHabitTrackerApp extends StatelessWidget {
         ),
         elevation: 8,
         backgroundColor: const Color(0xFF0A1628), // Dark navy
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: const Color(0xFFD4AF37), // Gold title
+          color: Color(0xFFD4AF37), // Gold title
         ),
-        contentTextStyle: GoogleFonts.inter(
+        contentTextStyle: const TextStyle(
           fontSize: 14,
-          color: const Color(0xFFE8E6E3),
+          color: Color(0xFFE8E6E3),
         ),
       ),
       // Bottom sheet styling
@@ -461,9 +476,9 @@ class MultiHabitTrackerApp extends StatelessWidget {
       listTileTheme: ListTileThemeData(
         iconColor: const Color(0xFFD4AF37), // Gold icons for visibility
         textColor: const Color(0xFFE8E6E3), // Light text
-        subtitleTextStyle: GoogleFonts.inter(
+        subtitleTextStyle: const TextStyle(
           fontSize: 14,
-          color: const Color(0xFFB0B0B0), // Lighter gray for subtitles
+          color: Color(0xFFB0B0B0), // Lighter gray for subtitles
         ),
       ),
       // Divider styling for dark theme
