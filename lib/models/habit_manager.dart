@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'database_helper.dart';
 import 'habit.dart';
 import 'habit_record.dart';
+import 'habit_session.dart';
 
 /// Manager class for habit-related business logic
 class HabitManager {
@@ -40,6 +41,8 @@ class HabitManager {
       name: name,
       createdAt: DateTime.now().toIso8601String(),
       isDeleted: false,
+      timerEnabled: false,
+      allowMultipleSessions: false,
     );
     return await _dbHelper.insertHabit(habit);
   }
@@ -346,5 +349,56 @@ class HabitManager {
   /// Clear all cached data
   void clearCache() {
     _habitRecordsCache.clear();
+  }
+
+  // ==================== SESSION/TIMER WRAPPERS ====================
+
+  Future<int> createSession({
+    required int habitId,
+    required int startTs,
+    String? status,
+    String? note,
+  }) async {
+    return _dbHelper.createSession(
+      habitId: habitId,
+      startTs: startTs,
+      status: status,
+      note: note,
+    );
+  }
+
+  Future<int> endSession({required int sessionId, required int endTs}) async {
+    return _dbHelper.endSession(sessionId: sessionId, endTs: endTs);
+  }
+
+  Future<HabitSession?> getRunningSession(int habitId) async {
+    return _dbHelper.getRunningSession(habitId);
+  }
+
+  Future<List<HabitSession>> getAllRunningSessions() async {
+    return _dbHelper.getAllRunningSessions();
+  }
+
+  Future<List<HabitSession>> getSessionsForDay(
+      int habitId, DateTime day) async {
+    return _dbHelper.getSessionsForDay(habitId, day);
+  }
+
+  Future<int> deleteSession(int sessionId) async {
+    return _dbHelper.deleteSession(sessionId);
+  }
+
+  Future<int> deleteAllSessionsForHabit(int habitId) async {
+    return _dbHelper.deleteAllSessionsForHabit(habitId);
+  }
+
+  // ==================== BULK QUERIES ====================
+
+  Future<List<HabitRecord>> getRecordsInRange(
+      DateTime startInclusive, DateTime endInclusive) async {
+    final fmt = DateFormat('yyyy-MM-dd');
+    final startStr = fmt.format(startInclusive);
+    final endStr = fmt.format(endInclusive);
+    return _dbHelper.getHabitRecordsInRange(startStr, endStr);
   }
 }

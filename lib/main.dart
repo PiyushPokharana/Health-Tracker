@@ -51,7 +51,7 @@ class MultiHabitTrackerApp extends StatelessWidget {
             themeMode: themeProvider.materialThemeMode,
             theme: _buildLightTheme(),
             darkTheme: _buildDarkTheme(),
-            home: const HomeScreen(),
+            home: const _AppBootstrap(),
           );
         },
       ),
@@ -496,6 +496,50 @@ class MultiHabitTrackerApp extends StatelessWidget {
           return const Color(0xFF808080); // Gray when unselected
         }),
       ),
+    );
+  }
+}
+
+class _AppBootstrap extends StatefulWidget {
+  const _AppBootstrap();
+
+  @override
+  State<_AppBootstrap> createState() => _AppBootstrapState();
+}
+
+class _AppBootstrapState extends State<_AppBootstrap> {
+  late Future<void> _initFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFuture = Future.microtask(() async {
+      final provider = context.read<HabitProvider>();
+      await provider.init();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _initFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 12),
+                  Text('Loading...'),
+                ],
+              ),
+            ),
+          );
+        }
+        return const HomeScreen();
+      },
     );
   }
 }

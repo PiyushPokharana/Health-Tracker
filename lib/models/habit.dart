@@ -5,6 +5,8 @@ class Habit {
   final String createdAt;
   final bool isDeleted;
   final String? deletedAt;
+  final bool timerEnabled;
+  final bool allowMultipleSessions;
 
   Habit({
     this.id,
@@ -12,6 +14,8 @@ class Habit {
     required this.createdAt,
     this.isDeleted = false,
     this.deletedAt,
+    this.timerEnabled = false,
+    this.allowMultipleSessions = false,
   });
 
   /// Convert Habit to Map for database storage
@@ -22,6 +26,8 @@ class Habit {
       'createdAt': createdAt,
       'isDeleted': isDeleted ? 1 : 0,
       'deletedAt': deletedAt,
+      'timerEnabled': timerEnabled ? 1 : 0,
+      'allowMultipleSessions': allowMultipleSessions ? 1 : 0,
     };
   }
 
@@ -33,6 +39,8 @@ class Habit {
       createdAt: map['createdAt'] as String,
       isDeleted: (map['isDeleted'] as int) == 1,
       deletedAt: map['deletedAt'] as String?,
+      timerEnabled: ((map['timerEnabled'] as int?) ?? 0) == 1,
+      allowMultipleSessions: ((map['allowMultipleSessions'] as int?) ?? 0) == 1,
     );
   }
 
@@ -43,6 +51,8 @@ class Habit {
     String? createdAt,
     bool? isDeleted,
     String? deletedAt,
+    bool? timerEnabled,
+    bool? allowMultipleSessions,
   }) {
     return Habit(
       id: id ?? this.id,
@@ -50,6 +60,9 @@ class Habit {
       createdAt: createdAt ?? this.createdAt,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      timerEnabled: timerEnabled ?? this.timerEnabled,
+      allowMultipleSessions:
+          allowMultipleSessions ?? this.allowMultipleSessions,
     );
   }
 

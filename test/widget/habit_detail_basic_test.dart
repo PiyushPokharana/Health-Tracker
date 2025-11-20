@@ -78,7 +78,7 @@ void main() {
       await tester.pumpWidget(createHabitDetailScreen(habit));
       await tester.pump();
 
-      expect(find.byIcon(Icons.notes), findsOneWidget);
+      expect(find.byIcon(Icons.notes_rounded), findsOneWidget);
     });
 
     testWidgets('should display statistics button in app bar', (tester) async {
@@ -86,7 +86,7 @@ void main() {
       await tester.pumpWidget(createHabitDetailScreen(habit));
       await tester.pump();
 
-      expect(find.byIcon(Icons.show_chart), findsOneWidget);
+      expect(find.byIcon(Icons.show_chart_rounded), findsOneWidget);
     });
 
     testWidgets('should show loading indicator initially', (tester) async {
@@ -131,7 +131,7 @@ void main() {
       await tester.pumpWidget(createHabitDetailScreen(habit));
       await tester.pump();
 
-      final notesButton = find.byIcon(Icons.notes);
+      final notesButton = find.byIcon(Icons.notes_rounded);
       expect(notesButton, findsOneWidget);
 
       // Verify it's inside an IconButton (tappable)
@@ -150,7 +150,7 @@ void main() {
       await tester.pumpWidget(createHabitDetailScreen(habit));
       await tester.pump();
 
-      final statsButton = find.byIcon(Icons.show_chart);
+      final statsButton = find.byIcon(Icons.show_chart_rounded);
       expect(statsButton, findsOneWidget);
 
       // Verify it's inside an IconButton (tappable)

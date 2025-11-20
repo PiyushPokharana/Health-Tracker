@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/daily_record_manager.dart';
 import '../models/daily_record.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -97,7 +96,7 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
   void addDelayedRecord(DateTime date, bool isSuccess) {
     setState(() {
       bool alreadyExists = records.any((record) =>
-      record.date.year == date.year &&
+          record.date.year == date.year &&
           record.date.month == date.month &&
           record.date.day == date.day);
 
@@ -133,7 +132,8 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
       }
     }
 
-    currentStreak = tempStreak; // Set the current streak to the last tempStreak value
+    currentStreak =
+        tempStreak; // Set the current streak to the last tempStreak value
   }
 
   // Method to show the dialog for editing an existing record
@@ -160,8 +160,8 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
                   if (picked != null && picked != editedDate)
                     editedDate = picked;
                 },
-                child:
-                Text('Date: ${editedDate.toLocal().toString().split(' ')[0]}'),
+                child: Text(
+                    'Date: ${editedDate.toLocal().toString().split(' ')[0]}'),
               ),
               SwitchListTile(
                 title: Text('Was the day successful?'),
@@ -226,11 +226,11 @@ class _DailySuccessHomePageState extends State<DailySuccessHomePage> {
             trailing: IconButton(
               icon: Icon(Icons.edit),
               onPressed: () {
-                _showEditEntryDialog(context, record);  // Edit existing record
+                _showEditEntryDialog(context, record); // Edit existing record
               },
             ),
             onLongPress: () {
-              _deleteRecord(index);  // Delete the record on long press
+              _deleteRecord(index); // Delete the record on long press
             },
           );
         },

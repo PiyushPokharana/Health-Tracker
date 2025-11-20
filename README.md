@@ -1,29 +1,54 @@
-# Daily Success Tracker
+# HTA - Habit Tracking App
 
-A sophisticated Flutter habit tracking application with a premium design aesthetic featuring Navy Blue, Gold, and Emerald Green color scheme. Track multiple habits, visualize your progress with beautiful calendar views, and maintain your success streak with an elegant, user-friendly interface.
+A sophisticated Flutter habit tracking application with advanced timer functionality and a premium design aesthetic. Track multiple habits with session-based timers, visualize your progress with beautiful calendar views, and maintain your success streak with an elegant, user-friendly interface.
 
-## 📱 Features
+[![Flutter](https://img.shields.io/badge/Flutter-3.6.1+-02569B?logo=flutter)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart)](https://dart.dev)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-### Core Functionality
-- **Multi-Habit Tracking**: Create and manage unlimited habits
-- **Daily Success Tracking**: Mark habits as completed (✓), skipped (○), or failed (✗) for each day
+## ✨ Features
+
+### 🎯 Advanced Timer System
+- **Persistent Stopwatch**: Timer continues running even when phone is locked, app is minimized, or device is restarted
+- **Background Persistence**: Database-backed timer state ensures accurate time tracking across app lifecycle
+- **Session Management**: Track multiple timed sessions per habit with start/end timestamps
+- **Persistent Timer Bar**: Always-visible timer bar at bottom of screen showing active timers
+- **Pause/Resume**: Full control over timer state with visual indicators
+
+### 📊 Habit Tracking
+- **Multi-Habit Management**: Create and track unlimited habits simultaneously
+- **Daily Success Marking**: Mark habits as completed (✓), skipped (○), or failed (✗) for each day
 - **Interactive Calendar**: Beautiful calendar view showing your habit completion history
-- **Statistics Dashboard**: View completion rates, streaks, and progress analytics
-- **Notes & Journal**: Add daily notes to track context and insights
-- **Trash Management**: Soft-delete habits with ability to restore or permanently delete
+- **Streak Tracking**: Visualize current and maximum streaks
+- **Statistics Dashboard**: View completion rates, trends, and progress analytics
 
-### Data Management
-- **Backup & Export**: Export all your habit data to JSON format
-- **Import Data**: Import previously exported backups
-- **Smart Duplicate Handling**: Automatically handles duplicate habits and records during import
-- **SQLite Database**: Reliable local storage for all your data
+### ⏱️ Session Logs
+- **Dedicated Session Viewer**: Full-screen session log with date navigation
+- **Date Filtering**: Quickly jump to any date with calendar picker
+- **Session Details**: View start time, end time, and duration for each session
+- **Delete Sessions**: Remove individual sessions with confirmation
+- **Empty State Handling**: Clear messaging when no sessions exist
 
-### User Experience
-- **Dark & Light Themes**: Toggle between beautifully designed themes
-- **Premium Design**: Navy Blue (#001F3F) + Gold (#D4AF37) + Emerald Green (#50C878) color palette
-- **Material 3 Design**: Modern UI following Material Design 3 guidelines
-- **Smooth Animations**: Polished transitions and interactions
-- **Responsive Layout**: Works seamlessly on different screen sizes
+### ⚙️ Smart Settings
+- **Timer ON/OFF Toggle**: Enable/disable timer functionality per habit
+- **Session Deletion Warning**: Confirmation dialog when disabling timer (erases all session data)
+- **7-Day Preference Memory**: "Don't show again" option for power users
+- **Multiple Sessions**: Automatic support when timer is enabled
+
+### 💾 Data Management
+- **SQLite Database**: Reliable local storage for habits, records, and sessions
+- **Backup & Export**: Export all your data to JSON format
+- **Import Data**: Restore from previously exported backups
+- **Smart Duplicate Handling**: Automatic deduplication during import
+- **Soft Delete**: Move habits to trash with ability to restore
+
+### 🎨 Premium User Experience
+- **Dark & Light Themes**: Seamless theme switching with WCAG AA contrast compliance
+- **Material 3 Design**: Modern UI following latest Material Design guidelines
+- **Navy Blue + Gold + Emerald**: Premium color palette (#001F3F, #D4AF37, #50C878)
+- **Smooth Animations**: Polished fade and slide transitions
+- **Responsive Layout**: Optimized for phones, tablets, and emulators
+- **Haptic Feedback**: Tactile responses for key interactions
 
 ## 🎨 Design Philosophy
 
@@ -64,14 +89,32 @@ Both light and dark themes are carefully crafted with optimal contrast ratios fo
 
 ### Building for Production
 
-**Android APK:**
+**Android App Bundle (for Google Play):**
+```bash
+flutter build appbundle --release
+```
+Output: `build/app/outputs/bundle/release/app-release.aab`
+
+**Android APK (universal - all devices):**
 ```bash
 flutter build apk --release
 ```
+Output: `build/app/outputs/flutter-apk/app-release.apk`
+
+**Android APK (split by architecture - smaller files):**
+```bash
+flutter build apk --release --split-per-abi
+```
+Output:
+- `app-armeabi-v7a-release.apk` (Old Android 5-8)
+- `app-arm64-v8a-release.apk` (New Android 8+)
+- `app-x86_64-release.apk` (Emulators/Tablets)
 
 **iOS:**
 ```bash
 flutter build ios --release
+# or for App Store
+flutter build ipa --release
 ```
 
 ## 📦 Dependencies
@@ -102,18 +145,19 @@ flutter build ios --release
 lib/
 ├── main.dart                          # App entry point & theme configuration
 ├── models/                            # Data models and business logic
-│   ├── habit.dart                     # Habit model
+│   ├── habit.dart                     # Habit model with timer settings
 │   ├── habit_record.dart              # Daily habit record model
+│   ├── habit_session.dart             # Timed session model
 │   ├── daily_record.dart              # Daily notes model
 │   ├── habit_manager.dart             # Habit management logic
 │   ├── daily_record_manager.dart      # Notes management logic
 │   └── database_helper.dart           # SQLite database operations
 ├── providers/                         # State management
-│   ├── habit_provider.dart            # Habit state provider
+│   ├── habit_provider.dart            # Habit state & timer management
 │   └── theme_provider.dart            # Theme state provider
 ├── screens/                           # UI screens
 │   ├── home_screen.dart               # Main screen with habit list
-│   ├── habit_detail_screen.dart       # Individual habit details & calendar
+│   ├── habit_detail_screen.dart       # Habit details, calendar & stopwatch
 │   ├── daily_success_screen.dart      # Daily tracking interface
 │   ├── settings_screen.dart           # App settings
 │   ├── trash_screen.dart              # Deleted habits management
@@ -121,31 +165,58 @@ lib/
 │   └── backup_screen.dart             # Backup & export functionality
 ├── widgets/                           # Reusable UI components
 │   ├── statistics_widget.dart         # Statistics display
-│   └── day_detail_bottom_sheet.dart   # Day detail modal
+│   ├── day_detail_bottom_sheet.dart   # Day detail modal
+│   └── persistent_timer_bar.dart      # Bottom timer bar
 └── services/                          # Business services
-    └── backup_service.dart            # Import/export functionality
+    ├── backup_service.dart            # Import/export functionality
+    └── preferences_service.dart       # User preferences storage
 ```
 
 ## 🎯 Usage Guide
 
 ### Creating a Habit
-1. Tap the **+** button on the home screen
-2. Enter your habit name
-3. Tap **Save** to create the habit
+1. Tap the **+ Add Habit** button on the home screen
+2. Enter your habit name (e.g., "Exercise", "Read", "Meditate")
+3. Tap **Add** to create the habit
+
+### Using the Timer
+1. Open a habit from the home screen
+2. Tap **Start** button to begin timer
+3. Timer persists even when app is closed or phone is locked
+4. Use **Pause/Resume** to control the timer
+5. Tap **Stop & Save** to save the session
+6. View all sessions in **Session Logs** screen
+
+### Managing Timer Settings
+1. Open habit detail screen
+2. Tap **Settings** icon (⚙️)
+3. Toggle **Timer ON/OFF**
+   - Turning OFF shows warning (erases all session data)
+   - Check "Don't show again for 7 days" for power users
+4. Multiple sessions automatically enabled when timer is ON
+
+### Viewing Session Logs
+1. Open habit detail screen
+2. Tap **History** icon (📊) in top-right
+3. Use date navigation arrows or calendar picker
+4. Tap delete icon to remove individual sessions
+5. Sessions show start time, end time, and duration
 
 ### Tracking Daily Progress
-1. Tap **Today's Success** on the home screen
-2. For each habit, select:
+1. Tap a habit on the home screen to open detail view
+2. Tap on calendar dates to mark:
    - ✓ **Completed**: Successfully did the habit
    - ○ **Skipped**: Intentionally skipped
    - ✗ **Failed**: Missed the habit
-3. Tap **Save** to record your progress
+3. Add optional notes for context
+4. Progress automatically saved
 
 ### Viewing Statistics
-- Tap on any habit card to see detailed statistics
-- View calendar with color-coded days
-- See completion rates and streaks
-- Scroll through historical data
+- Open any habit to see detailed statistics
+- Interactive calendar with color-coded days
+- Current streak and maximum streak display
+- Completion rates and trends
+- Recent activity sparkline
 
 ### Managing Backups
 1. Go to **Settings** → **Backup & Export**
@@ -169,9 +240,12 @@ flutter pub run flutter_launcher_icons
 
 ### Database
 The app uses SQLite for local data storage. Database schema includes:
-- **habits** table: Stores habit information
-- **habit_records** table: Stores daily completion records
-- **daily_records** table: Stores daily notes
+- **Habits** table: Stores habit information with timer settings
+- **HabitRecords** table: Stores daily completion records
+- **HabitSessions** table: Stores timed sessions with start/end timestamps
+- **DailyRecords** table: Stores daily notes and journal entries
+
+All data is stored locally on device with no cloud sync (privacy-first design).
 
 ## 🧪 Testing
 
@@ -179,6 +253,30 @@ Run tests with:
 ```bash
 flutter test
 ```
+
+## 🔒 Privacy & Security
+
+- ✅ **100% Local Storage**: All data stored on device using SQLite
+- ✅ **No Cloud Sync**: Your data never leaves your device
+- ✅ **No Analytics**: No tracking or telemetry
+- ✅ **No Ads**: Clean, distraction-free experience
+- ✅ **Open Source**: Full transparency of codebase
+
+## 🐛 Known Issues & Limitations
+
+- Timer notifications not yet implemented (planned for v4.0)
+- Cloud sync not available (local storage only)
+- Import/export requires manual file management
+
+## 🗺️ Roadmap
+
+- [ ] Push notifications for timer completion
+- [ ] Habit categories and tags
+- [ ] Weekly/monthly goal setting
+- [ ] Data visualization charts
+- [ ] Cloud backup option (optional)
+- [ ] Widget support for home screen
+- [ ] Reminder notifications
 
 ## 🤝 Contributing
 
@@ -203,15 +301,20 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🙏 Acknowledgments
 
 - Flutter team for the amazing framework
-- Material Design for design guidelines
+- Material Design 3 for design guidelines
 - All open-source package contributors
+- Community feedback and feature suggestions
 
 ## 📧 Support
 
-For support, please open an issue in the GitHub repository or contact the maintainer.
+For support, feature requests, or bug reports:
+- Open an issue in the [GitHub repository](https://github.com/PiyushPokharana/Health-Tracker/issues)
+- Check existing issues before creating new ones
+- Provide detailed information and steps to reproduce bugs
 
 ---
 
-**Version**: 3.0.0+10  
+**Version**: 3.1.3+14  
 **Last Updated**: November 2025  
-**Flutter Version**: 3.6.1+
+**Flutter Version**: 3.6.1+  
+**Platform Support**: Android 5.0+, iOS 11+, Windows, macOS, Linux, Web

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For HapticFeedback
 import 'package:provider/provider.dart';
 import '../models/habit.dart';
+import '../models/habit_record.dart';
 import '../providers/habit_provider.dart';
+import '../widgets/persistent_timer_bar.dart';
 import 'habit_detail_screen.dart';
 import 'notes_list_screen.dart';
 import 'settings_screen.dart';
@@ -135,6 +137,63 @@ class _HomeScreenState extends State<HomeScreen>
       _selectedHabitIds.add(habitId);
       _fabAnimationController.forward(); // Animate FAB out
     });
+  }
+
+  Future<void> _quickMarkDone(int habitId) async {
+    try {
+      HapticFeedback.lightImpact();
+      await context
+          .read<HabitProvider>()
+          .addOrUpdateRecord(habitId, DateTime.now(), HabitStatus.complete);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Marked done for today')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to mark done: $e')),
+      );
+    }
+  }
+
+  Future<void> _quickAddSession(int habitId) async {
+    final provider = context.read<HabitProvider>();
+    try {
+      HapticFeedback.lightImpact();
+      final started = await provider.startTimer(habitId);
+      if (started) {
+        await provider.stopTimer(habitId);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Session added')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add session: $e')),
+      );
+    }
+  }
+
+  Future<void> _toggleTimer(Habit habit) async {
+    final provider = context.read<HabitProvider>();
+    final running = provider.runningSessionFor(habit.id!);
+    try {
+      if (running == null) {
+        HapticFeedback.lightImpact();
+        await provider.startTimer(habit.id!);
+      } else {
+        HapticFeedback.heavyImpact();
+        await provider.stopTimer(habit.id!);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Timer error: $e')),
+      );
+    }
   }
 
   void _exitSelectionMode() {
@@ -269,11 +328,35 @@ class _HomeScreenState extends State<HomeScreen>
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: _isSelectionMode ? _buildSelectionAppBar() : _buildNormalAppBar(),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : habits.isEmpty
-              ? _buildEmptyState()
-              : _buildHabitList(habits, provider),
+      body: Column(
+        children: [
+          Expanded(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : habits.isEmpty
+                    ? _buildEmptyState()
+                    : _buildHabitList(habits, provider),
+          ),
+          PersistentTimerBar(
+            provider: provider,
+            onTap: () {
+              // Navigate to the first running habit's detail screen
+              for (var habit in habits) {
+                if (habit.id != null &&
+                    provider.runningSessionFor(habit.id!) != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HabitDetailScreen(habit: habit),
+                    ),
+                  );
+                  break;
+                }
+              }
+            },
+          ),
+        ],
+      ),
       floatingActionButton: _isSelectionMode
           ? null
           : ScaleTransition(
@@ -285,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen>
                   onPressed: _showAddHabitDialog,
                   backgroundColor: Theme.of(context).colorScheme.secondary,
                   foregroundColor: Colors.white,
-                  icon: const Icon(Icons.add_rounded),
+                  icon: const Icon(Icons.add),
                   label: const Text('Add Habit'),
                 ),
               ),
@@ -306,7 +389,7 @@ class _HomeScreenState extends State<HomeScreen>
           label: 'View all notes',
           button: true,
           child: IconButton(
-            icon: const Icon(Icons.notes_rounded),
+            icon: const Icon(Icons.notes),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -322,7 +405,7 @@ class _HomeScreenState extends State<HomeScreen>
           label: 'Open settings',
           button: true,
           child: IconButton(
-            icon: const Icon(Icons.settings_rounded),
+            icon: const Icon(Icons.settings),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -418,6 +501,33 @@ class _HomeScreenState extends State<HomeScreen>
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.secondary,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Quick tips',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                _TipRow(
+                    icon: Icons.add,
+                    text: 'Tap "Create" to add your first habit'),
+                const SizedBox(height: 6),
+                _TipRow(
+                    icon: Icons.check_circle,
+                    text: 'Use quick action to mark done'),
+                const SizedBox(height: 6),
+                _TipRow(
+                    icon: Icons.timer,
+                    text: 'Enable timer in settings to track sessions'),
+              ],
             ),
           ),
         ],
@@ -567,8 +677,38 @@ class _HomeScreenState extends State<HomeScreen>
                                               : FontWeight.w400,
                                         ),
                                   ),
+                                  const SizedBox(width: 8),
+                                  if (context
+                                          .read<HabitProvider>()
+                                          .runningSessionFor(habit.id!) !=
+                                      null)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary
+                                            .withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        'Running',
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
                                 ],
                               ),
+                              const SizedBox(height: 8),
+                              _RecentSparkline(habitId: habit.id!),
+                              const SizedBox(height: 8),
+                              _buildQuickActions(habit),
                             ],
                           ),
                         ),
@@ -589,6 +729,127 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildQuickActions(Habit habit) {
+    final provider = context.watch<HabitProvider>();
+    final isRunning = provider.runningSessionFor(habit.id!) != null;
+    final actions = <Widget>[];
+
+    // Single-daily quick mark
+    if (!habit.allowMultipleSessions) {
+      actions.add(
+        IconButton(
+          icon: const Icon(Icons.check_circle),
+          color: Theme.of(context).colorScheme.tertiary,
+          onPressed: () => _quickMarkDone(habit.id!),
+          tooltip: 'Mark done today',
+        ),
+      );
+    }
+
+    // Timer quick toggle (if enabled)
+    if (habit.timerEnabled) {
+      actions.add(
+        IconButton(
+          icon: Icon(isRunning ? Icons.stop_circle : Icons.timer),
+          color: Theme.of(context).colorScheme.secondary,
+          onPressed: () => _toggleTimer(habit),
+          tooltip: isRunning ? 'Stop timer' : 'Start timer',
+        ),
+      );
+    }
+
+    // Multi-session quick add
+    if (habit.allowMultipleSessions) {
+      actions.add(
+        IconButton(
+          icon: const Icon(Icons.playlist_add),
+          color: Theme.of(context).colorScheme.primary,
+          onPressed: () => _quickAddSession(habit.id!),
+          tooltip: 'Quick add session',
+        ),
+      );
+    }
+
+    if (actions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Row(children: actions);
+  }
+}
+
+class _RecentSparkline extends StatelessWidget {
+  final int habitId;
+  const _RecentSparkline({required this.habitId});
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<HabitProvider>();
+    final series = provider.recentStatusFor(habitId);
+    if (series == null) return const SizedBox.shrink();
+    return Row(
+      children: [
+        for (final status in series)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+            child: Container(
+              width: 6,
+              height: 14,
+              decoration: BoxDecoration(
+                color: _colorForStatus(context, status),
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Color _colorForStatus(BuildContext context, HabitStatus status) {
+    switch (status) {
+      case HabitStatus.complete:
+        return Theme.of(context).colorScheme.tertiary;
+      case HabitStatus.skipped:
+        return const Color(0xFFD4AF37);
+      case HabitStatus.missed:
+        return (Theme.of(context).brightness == Brightness.dark)
+            ? const Color(0xFF2A3F5F)
+            : Colors.grey.shade300;
+    }
+  }
+}
+
+class _TipRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _TipRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: Theme.of(context).colorScheme.secondary,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFFB0B0B0)
+                      : Colors.grey[700],
+                ),
+          ),
+        ),
+      ],
     );
   }
 }
